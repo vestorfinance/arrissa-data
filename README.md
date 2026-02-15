@@ -327,6 +327,17 @@ netstat -ano | findstr :5001  # Windows
 
 ---
 
+## Credits
+
+Created by **Ngonidzashe Jiji** (David Richchild)
+
+- [Facebook](https://www.facebook.com/davidrichchild/)
+- [YouTube](https://www.youtube.com/@davidrichchild)
+- [Instagram](https://www.instagram.com/davidrichchild/)
+- [Telegram](https://t.me/real_david_richchild)
+
+---
+
 ## License
 
 This project is proprietary software by [Vestor Finance](https://github.com/vestorfinance).
