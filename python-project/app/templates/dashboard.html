@@ -1,0 +1,360 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard — {{ app_name }}{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+
+<!-- Overall System Health Banner -->
+<div id="system-health-banner" class="bg-surface-900 border border-surface-800 rounded-2xl p-6 mb-8">
+    <div class="flex flex-row items-center justify-between">
+        <div class="flex flex-row items-center gap-4">
+            <div id="overall-dot" class="w-4 h-4 rounded-full bg-surface-600 animate-pulse"></div>
+            <div>
+                <h3 class="text-lg font-bold text-white">System Status</h3>
+                <p id="overall-text" class="text-sm text-surface-400">Checking services…</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <span id="health-score" class="text-2xl font-bold text-surface-400">—</span>
+            <span class="text-sm text-surface-500">services healthy</span>
+            <button onclick="refreshHealth()" class="ml-4 text-surface-400 hover:text-white transition" title="Refresh">
+                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Account Stats -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl p-6">
+        <div class="flex flex-row items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-brand-600/15 flex items-center justify-center">
+                <i data-lucide="landmark" class="w-6 h-6 text-brand-400"></i>
+            </div>
+            <span class="text-base text-surface-400">Brokers</span>
+        </div>
+        <p class="text-3xl font-bold text-white">{{ credentials|length }}</p>
+    </div>
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl p-6">
+        <div class="flex flex-row items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-green-600/15 flex items-center justify-center">
+                <i data-lucide="wallet" class="w-6 h-6 text-green-400"></i>
+            </div>
+            <span class="text-base text-surface-400">Total Accounts</span>
+        </div>
+        <p class="text-3xl font-bold text-white">{{ total_accounts }}</p>
+    </div>
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl p-6">
+        <div class="flex flex-row items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-amber-600/15 flex items-center justify-center">
+                <i data-lucide="activity" class="w-6 h-6 text-amber-400"></i>
+            </div>
+            <span class="text-base text-surface-400">Active Accounts</span>
+        </div>
+        <p class="text-3xl font-bold text-white">{{ active_accounts }}</p>
+    </div>
+</div>
+
+<!-- API Health Status Cards -->
+<div class="mb-8">
+    <div class="flex items-center justify-between mb-5">
+        <h3 class="text-base font-semibold text-white">API Health Status</h3>
+        <span id="health-timestamp" class="text-xs text-surface-500"></span>
+    </div>
+    <div id="api-health-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <!-- Skeleton cards while loading -->
+        {% for i in range(11) %}
+        <div class="health-skeleton bg-surface-900 border border-surface-800 rounded-2xl p-5 animate-pulse">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-3 h-3 rounded-full bg-surface-700"></div>
+                <div class="h-4 bg-surface-700 rounded w-24"></div>
+            </div>
+            <div class="h-3 bg-surface-800 rounded w-32 mt-2"></div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Server Details & Smart Updater -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+    <!-- Server Details -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-600/15 flex items-center justify-center">
+                <i data-lucide="server" class="w-5 h-5 text-purple-400"></i>
+            </div>
+            <h3 class="text-base font-semibold text-white">Server Details</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <span class="text-sm text-surface-400">Hostname</span>
+                <span class="text-sm font-mono text-white">{{ server_stats.hostname }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-sm text-surface-400">OS</span>
+                <span class="text-sm font-mono text-white">{{ server_stats.os }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-sm text-surface-400">Python</span>
+                <span class="text-sm font-mono text-white">{{ server_stats.python }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-sm text-surface-400">System Uptime</span>
+                <span class="text-sm font-mono text-white">{{ server_stats.uptime }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-sm text-surface-400">App Memory</span>
+                <span class="text-sm font-mono text-white">{{ server_stats.process_mem_mb }} MB</span>
+            </div>
+
+            <!-- CPU -->
+            <div>
+                <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-sm text-surface-400">CPU ({{ server_stats.cpu_count }} cores)</span>
+                    <span class="text-sm font-mono text-white">{{ server_stats.cpu_percent }}%</span>
+                </div>
+                <div class="h-2 bg-surface-800 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500 {% if server_stats.cpu_percent > 80 %}bg-red-500{% elif server_stats.cpu_percent > 50 %}bg-amber-500{% else %}bg-green-500{% endif %}"
+                         style="width: {{ server_stats.cpu_percent }}%"></div>
+                </div>
+            </div>
+
+            <!-- Memory -->
+            <div>
+                <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-sm text-surface-400">Memory</span>
+                    <span class="text-sm font-mono text-white">{{ server_stats.mem_used_gb }} / {{ server_stats.mem_total_gb }} GB ({{ server_stats.mem_percent }}%)</span>
+                </div>
+                <div class="h-2 bg-surface-800 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500 {% if server_stats.mem_percent > 85 %}bg-red-500{% elif server_stats.mem_percent > 60 %}bg-amber-500{% else %}bg-blue-500{% endif %}"
+                         style="width: {{ server_stats.mem_percent }}%"></div>
+                </div>
+            </div>
+
+            <!-- Disk -->
+            <div>
+                <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-sm text-surface-400">Disk</span>
+                    <span class="text-sm font-mono text-white">{{ server_stats.disk_used_gb }} / {{ server_stats.disk_total_gb }} GB ({{ server_stats.disk_percent }}%)</span>
+                </div>
+                <div class="h-2 bg-surface-800 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500 {% if server_stats.disk_percent > 90 %}bg-red-500{% elif server_stats.disk_percent > 70 %}bg-amber-500{% else %}bg-cyan-500{% endif %}"
+                         style="width: {{ server_stats.disk_percent }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Economic Data Fetcher (Smart Updater) -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-cyan-600/15 flex items-center justify-center">
+                    <i data-lucide="refresh-cw" class="w-5 h-5 text-cyan-400"></i>
+                </div>
+                <h3 class="text-base font-semibold text-white">Economic Data Fetcher</h3>
+            </div>
+            <div id="updater-badge" class="flex items-center gap-2">
+                {% if updater_status.running %}
+                <span class="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse"></span>
+                <span class="text-xs font-semibold text-green-400">RUNNING</span>
+                {% elif updater_status.enabled %}
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                <span class="text-xs font-semibold text-amber-400">IDLE</span>
+                {% else %}
+                <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
+                <span class="text-xs font-semibold text-red-400">DISABLED</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <span class="text-sm text-surface-400">Status</span>
+                <span class="text-sm font-medium {% if updater_status.running %}text-green-400{% elif updater_status.enabled %}text-amber-400{% else %}text-red-400{% endif %}">
+                    {% if updater_status.running %}Running{% elif updater_status.enabled %}Enabled (idle){% else %}Disabled{% endif %}
+                </span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-sm text-surface-400">Last Periodic Update</span>
+                <span class="text-sm font-mono text-white">{{ updater_status.last_periodic_update or 'Never' }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-sm text-surface-400">Next Event Chase</span>
+                <span class="text-sm font-mono text-white">{{ updater_status.next_event_chase or 'None scheduled' }}</span>
+            </div>
+            {% if updater_status.last_chase_info %}
+            <div class="flex justify-between items-center">
+                <span class="text-sm text-surface-400">Last Chase</span>
+                <span class="text-sm text-surface-200 truncate ml-4" title="{{ updater_status.last_chase_info }}">{{ updater_status.last_chase_info }}</span>
+            </div>
+            {% endif %}
+
+            {% if updater_status.recent_log %}
+            <div class="mt-4">
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-widest mb-2">Recent Activity</p>
+                <div class="bg-surface-950 rounded-xl p-3 max-h-40 overflow-y-auto space-y-1">
+                    {% for line in updater_status.recent_log|reverse %}
+                    <p class="text-xs font-mono text-surface-300 leading-relaxed">{{ line }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="flex gap-3 pt-2">
+                <form method="POST" action="/smart-updater/toggle" class="flex-1">
+                    <input type="hidden" name="action" value="{% if updater_status.enabled %}disable{% else %}enable{% endif %}">
+                    <button type="submit" class="w-full px-4 py-2.5 rounded-xl text-sm font-semibold transition
+                        {% if updater_status.enabled %}bg-red-900/40 text-red-400 border border-red-800 hover:bg-red-900/60
+                        {% else %}bg-green-900/40 text-green-400 border border-green-800 hover:bg-green-900/60{% endif %}">
+                        {% if updater_status.enabled %}Disable Fetcher{% else %}Enable Fetcher{% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accounts table -->
+<div class="bg-surface-900 border border-surface-800 rounded-2xl">
+    <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center justify-between">
+        <h3 class="text-base font-semibold text-white">All Synced Accounts</h3>
+        <a href="/brokers" class="flex flex-row items-center gap-2 text-sm text-brand-400 hover:text-brand-300 transition">
+            <i data-lucide="settings-2" class="w-4 h-4 flex-shrink-0"></i>
+            <span>Manage Brokers</span>
+        </a>
+    </div>
+
+    {% if all_accounts|length == 0 %}
+    <div class="text-center py-20 px-6">
+        <div class="w-16 h-16 rounded-2xl bg-surface-800 flex items-center justify-center mx-auto mb-5">
+            <i data-lucide="inbox" class="w-8 h-8 text-surface-400"></i>
+        </div>
+        <p class="text-surface-200 text-base">No accounts synced yet.</p>
+        <a href="/brokers" class="text-sm text-brand-400 hover:text-brand-300 mt-3 inline-block">Add a broker to get started</a>
+    </div>
+    {% else %}
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                    <th class="text-left py-4 px-6 font-semibold">Arrissa ID</th>
+                    <th class="text-left py-4 px-6 font-semibold">Account</th>
+                    <th class="text-left py-4 px-6 font-semibold">Broker</th>
+                    <th class="text-left py-4 px-6 font-semibold">Env</th>
+                    <th class="text-left py-4 px-6 font-semibold">Currency</th>
+                    <th class="text-left py-4 px-6 font-semibold">Status</th>
+                    <th class="text-right py-4 px-6 font-semibold">Balance</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-surface-800">
+                {% for item in all_accounts %}
+                <tr class="hover:bg-surface-800/50 transition-colors">
+                    <td class="py-4 px-6">
+                        <span class="text-xs font-mono text-brand-400">{{ item.account.arrissa_id }}</span>
+                    </td>
+                    <td class="py-4 px-6">
+                        <span class="text-sm font-medium text-white">{{ item.account.name or item.account.account_id }}</span>
+                        <span class="text-surface-400 text-xs ml-2">#{{ item.account.acc_num }}</span>
+                    </td>
+                    <td class="py-4 px-6 text-sm text-surface-200">{{ item.broker_email }}</td>
+                    <td class="py-4 px-6">
+                        <span class="text-xs px-2.5 py-1 rounded-full font-semibold
+                            {% if item.environment == 'live' %}bg-green-900/40 text-green-400 border border-green-800
+                            {% else %}bg-blue-900/40 text-blue-400 border border-blue-800{% endif %}">
+                            {{ item.environment }}
+                        </span>
+                    </td>
+                    <td class="py-4 px-6 text-sm text-surface-200">{{ item.account.currency }}</td>
+                    <td class="py-4 px-6">
+                        <span class="text-xs px-2.5 py-1 rounded-full font-semibold
+                            {% if item.account.status == 'ACTIVE' %}bg-green-900/40 text-green-400
+                            {% else %}bg-amber-900/40 text-amber-400{% endif %}">
+                            {{ item.account.status }}
+                        </span>
+                    </td>
+                    <td class="py-4 px-6 text-right text-white font-mono text-base font-semibold">{{ item.account.account_balance }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+const API_KEY = "{{ user.api_key }}";
+
+function refreshHealth() {
+    const grid = document.getElementById('api-health-grid');
+    const banner = document.getElementById('overall-dot');
+    const overallText = document.getElementById('overall-text');
+    const scoreEl = document.getElementById('health-score');
+    const tsEl = document.getElementById('health-timestamp');
+
+    fetch(`/api/system-health?api_key=${API_KEY}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) { overallText.textContent = data.error; return; }
+
+            // Overall banner
+            const overall = data.overall;
+            banner.className = 'w-4 h-4 rounded-full ' + (
+                overall === 'healthy' ? 'bg-green-400 shadow-lg shadow-green-400/50' :
+                overall === 'degraded' ? 'bg-amber-400 shadow-lg shadow-amber-400/50' :
+                'bg-red-400 shadow-lg shadow-red-400/50'
+            );
+            overallText.textContent = overall === 'healthy' ? 'All systems operational' :
+                overall === 'degraded' ? 'Some services degraded' : 'System issues detected';
+            scoreEl.textContent = data.healthy_count + '/' + data.total_count;
+            scoreEl.className = 'text-2xl font-bold ' + (
+                overall === 'healthy' ? 'text-green-400' :
+                overall === 'degraded' ? 'text-amber-400' : 'text-red-400'
+            );
+            tsEl.textContent = 'Last checked: ' + data.timestamp;
+
+            // Build health cards
+            let html = '';
+            const services = data.services;
+            for (const [key, svc] of Object.entries(services)) {
+                const isHealthy = svc.status === 'healthy';
+                const isDisabled = svc.status === 'disabled';
+                const dotColor = isHealthy ? 'bg-green-400' : isDisabled ? 'bg-amber-400' : 'bg-red-400';
+                const dotShadow = isHealthy ? 'shadow-green-400/50' : isDisabled ? 'shadow-amber-400/50' : 'shadow-red-400/50';
+                const borderColor = isHealthy ? 'border-green-900/50' : isDisabled ? 'border-amber-900/50' : 'border-red-900/50';
+                const statusText = isHealthy ? 'Healthy' : isDisabled ? 'Disabled' : 'Unhealthy';
+                const statusColor = isHealthy ? 'text-green-400' : isDisabled ? 'text-amber-400' : 'text-red-400';
+
+                html += `
+                <div class="bg-surface-900 border ${borderColor} rounded-2xl p-5 hover:bg-surface-800/50 transition-colors">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-surface-800 flex items-center justify-center">
+                                <i data-lucide="${svc.icon}" class="w-4.5 h-4.5 text-surface-300"></i>
+                            </div>
+                            <span class="text-sm font-semibold text-white">${svc.desc}</span>
+                        </div>
+                        <div class="w-3 h-3 rounded-full ${dotColor} shadow-lg ${dotShadow}"></div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-surface-400 truncate pr-2" title="${svc.detail}">${svc.detail}</span>
+                        <span class="text-xs font-semibold ${statusColor} whitespace-nowrap">${statusText}</span>
+                    </div>
+                </div>`;
+            }
+            grid.innerHTML = html;
+
+            // Re-initialize Lucide icons for dynamically added elements
+            if (window.lucide) lucide.createIcons();
+        })
+        .catch(err => {
+            overallText.textContent = 'Failed to check health';
+            banner.className = 'w-4 h-4 rounded-full bg-red-400';
+        });
+}
+
+// Check health on page load and every 60 seconds
+refreshHealth();
+setInterval(refreshHealth, 60000);
+</script>
+
+{% endblock %}

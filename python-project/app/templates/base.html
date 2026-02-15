@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Arrissa{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#eef2ff', 100: '#e0e7ff', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 900: '#312e81' },
+                        surface: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 400: '#94a3b8', 700: '#334155', 800: '#1e293b', 850: '#172033', 900: '#0f172a', 950: '#020617' },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        html, body { font-family: 'Inter', system-ui, sans-serif; overscroll-behavior: none; }
+        pre code.hljs { background: transparent !important; padding: 0 !important; }
+    </style>
+</head>
+<body class="bg-surface-950 text-surface-200 min-h-screen">
+    {% block body %}{% endblock %}
+    <script>
+    lucide.createIcons(); hljs.highlightAll();
+    // Auto-dismiss flash messages after 3s
+    document.querySelectorAll('.flash-msg').forEach(el => {
+        setTimeout(() => { el.style.opacity = '0'; }, 3000);
+        setTimeout(() => { el.remove(); }, 3500);
+    });
+    // Clean message/error from URL
+    if (window.location.search.includes('message=') || window.location.search.includes('error=')) {
+        const u = new URL(window.location);
+        u.searchParams.delete('message');
+        u.searchParams.delete('error');
+        history.replaceState(null, '', u.pathname + u.hash);
+    }
+    </script>
+</body>
+</html>

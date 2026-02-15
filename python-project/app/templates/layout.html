@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-surface-900 border-r border-surface-800 flex flex-col fixed h-full">
+        <!-- Logo -->
+        <div class="px-6 border-b border-surface-800" style="padding-top: 1.2rem; padding-bottom: 1.2rem;">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-white"></i>
+                </div>
+                <span class="text-xl font-bold text-white tracking-tight">{{ app_name }}</span>
+            </div>
+        </div>
+
+        <!-- Nav -->
+        <nav class="flex-1 px-4 py-6">
+            <p class="text-xs font-semibold text-surface-400 uppercase tracking-widest mb-4 px-3">Menu</p>
+
+            <a href="/dashboard"
+               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
+                      {% if active_page == 'dashboard' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
+                <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="/brokers"
+               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
+                      {% if active_page == 'brokers' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
+                <i data-lucide="landmark" class="w-5 h-5 flex-shrink-0"></i>
+                <span>Brokers</span>
+            </a>
+
+            <a href="/settings"
+               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
+                      {% if active_page == 'settings' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
+                <i data-lucide="settings" class="w-5 h-5 flex-shrink-0"></i>
+                <span>Settings</span>
+            </a>
+
+            <a href="/instruments-api"
+               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
+                      {% if active_page == 'instruments_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
+                <i data-lucide="file-code" class="w-5 h-5 flex-shrink-0"></i>
+                <span>Instruments API</span>
+            </a>
+
+            <a href="/account-details-api"
+               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
+                      {% if active_page == 'account_details_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
+                <i data-lucide="user-circle" class="w-5 h-5 flex-shrink-0"></i>
+                <span>Account Details API</span>
+            </a>
+
+            <a href="/order-api"
+               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
+                      {% if active_page == 'order_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
+                <i data-lucide="list-ordered" class="w-5 h-5 flex-shrink-0"></i>
+                <span>Order API</span>
+            </a>
+
+            <a href="/trading-api"
+               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
+                      {% if active_page == 'trading_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
+                <i data-lucide="arrow-left-right" class="w-5 h-5 flex-shrink-0"></i>
+                <span>Trading API</span>
+            </a>
+
+            <a href="/market-data-api"
+               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
+                      {% if active_page == 'market_data_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
+                <i data-lucide="candlestick-chart" class="w-5 h-5 flex-shrink-0"></i>
+                <span>Market Data API</span>
+            </a>
+
+            <a href="/chart-image-api"
+               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
+                      {% if active_page == 'chart_image_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
+                <i data-lucide="image" class="w-5 h-5 flex-shrink-0"></i>
+                <span>Chart Image API</span>
+            </a>
+
+            <a href="/news-api"
+               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
+                      {% if active_page == 'news_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
+                <i data-lucide="newspaper" class="w-5 h-5 flex-shrink-0"></i>
+                <span>News API</span>
+            </a>
+
+            <a href="/event-ids"
+               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
+                      {% if active_page == 'event_ids' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
+                <i data-lucide="hash" class="w-5 h-5 flex-shrink-0"></i>
+                <span>Event ID Reference</span>
+            </a>
+
+            <a href="/scrape-api"
+               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
+                      {% if active_page == 'scrape_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
+                <i data-lucide="globe" class="w-5 h-5 flex-shrink-0"></i>
+                <span>Scrape API</span>
+            </a>
+
+            <a href="/mcp-server"
+               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
+                      {% if active_page == 'mcp_server' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
+                <i data-lucide="cpu" class="w-5 h-5 flex-shrink-0"></i>
+                <span>MCP Server</span>
+            </a>
+
+            <a href="/asp-guide"
+               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
+                      {% if active_page == 'asp_guide' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
+                <i data-lucide="search" class="w-5 h-5 flex-shrink-0"></i>
+                <span>ASP Protocol</span>
+            </a>
+        </nav>
+
+        <!-- Sidebar footer -->
+        <div class="px-4 py-5 border-t border-surface-800">
+            <p class="text-xs text-surface-400 text-center">&copy; 2026 {{ app_name }}</p>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 ml-64">
+        <!-- Top bar -->
+        <header class="sticky top-0 z-10 bg-surface-950/80 backdrop-blur-md border-b border-surface-800">
+            <div class="flex items-center justify-between px-10 py-5">
+                <h2 class="text-xl font-bold text-white">{% block page_title %}Dashboard{% endblock %}</h2>
+
+                <div class="flex items-center gap-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-brand-600/20 flex items-center justify-center">
+                            <i data-lucide="user" class="w-4 h-4 text-brand-400"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-white leading-tight">{{ user.first_name }} {{ user.last_name }}</p>
+                            <p class="text-xs text-surface-400">{{ user.email }}</p>
+                        </div>
+                    </div>
+                    <a href="/logout"
+                       class="flex flex-row items-center gap-2 text-sm text-surface-400 hover:text-white border border-surface-700 hover:border-surface-400 px-4 py-2 rounded-lg transition-all duration-200">
+                        <i data-lucide="log-out" class="w-4 h-4 flex-shrink-0"></i>
+                        <span>Sign Out</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div class="px-10 py-8">
+            {% if message %}
+            <div class="flash-msg flex flex-row items-center gap-3 bg-green-900/30 border border-green-800 text-green-300 px-5 py-4 rounded-xl mb-6 text-sm transition-opacity duration-500">
+                <i data-lucide="check-circle-2" class="w-5 h-5 flex-shrink-0"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endif %}
+            {% if error %}
+            <div class="flash-msg flex flex-row items-center gap-3 bg-red-900/30 border border-red-800 text-red-300 px-5 py-4 rounded-xl mb-6 text-sm transition-opacity duration-500">
+                <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0"></i>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+{% endblock %}

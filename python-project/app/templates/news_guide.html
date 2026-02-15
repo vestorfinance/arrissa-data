@@ -1,0 +1,549 @@
+{% extends "layout.html" %}
+{% block title %}News API — {{ app_name }}{% endblock %}
+{% block page_title %}News API{% endblock %}
+{% block content %}
+
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Introduction -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="book-open" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Overview</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300 leading-relaxed">
+                The {{ app_name }} News API returns economic calendar events (CPI, NFP, interest rates, etc.) for major economies.
+                Each event includes a consistent <span class="font-mono text-brand-400">event_type_id</span> — the same event type always gets the same ID regardless of date.
+                Filter by currency, impact level, or specific event type.
+            </p>
+            <div class="flex flex-row items-start gap-3 bg-surface-800/50 border border-surface-700 rounded-xl p-4">
+                <i data-lucide="info" class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                <p class="text-sm text-surface-300">
+                    Find your API key on the <a href="/settings" class="text-brand-400 hover:text-brand-300 underline">Settings</a> page.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Smart Updater -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center justify-between">
+            <div class="flex flex-row items-center gap-3">
+                <i data-lucide="cpu" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+                <h3 class="text-base font-semibold text-white">Smart Event Updater</h3>
+            </div>
+            <div class="flex flex-row items-center gap-3">
+                {% if updater_status.enabled and updater_status.running %}
+                <span class="flex items-center gap-1.5 text-xs font-semibold text-green-400">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    Running
+                </span>
+                <form action="/news/smart-updater/toggle" method="POST">
+                    <input type="hidden" name="action" value="disable">
+                    <button type="submit" class="text-xs bg-surface-700 hover:bg-surface-600 text-surface-300 px-3 py-1.5 rounded-lg transition font-semibold">
+                        Disable
+                    </button>
+                </form>
+                {% else %}
+                <span class="flex items-center gap-1.5 text-xs font-semibold text-surface-500">
+                    <span class="inline-flex rounded-full h-2 w-2 bg-surface-600"></span>
+                    Stopped
+                </span>
+                <form action="/news/smart-updater/toggle" method="POST">
+                    <input type="hidden" name="action" value="enable">
+                    <button type="submit" class="text-xs bg-brand-600 hover:bg-brand-500 text-white px-3 py-1.5 rounded-lg transition font-semibold">
+                        Enable
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300 leading-relaxed">
+                Automatically keeps events fresh. Updates this week + next week every 4 hours.
+                After each scheduled event, chases released data at <span class="font-mono text-surface-200">+30s</span>,
+                <span class="font-mono text-surface-200">+90s</span>, and <span class="font-mono text-surface-200">+15min</span>.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-3">
+                    <p class="text-xs text-surface-400 mb-1">Last Periodic Update</p>
+                    <p class="text-sm font-mono text-surface-200">{{ updater_status.last_periodic_update or '—' }}</p>
+                </div>
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-3">
+                    <p class="text-xs text-surface-400 mb-1">Next Event Chase</p>
+                    <p class="text-sm font-mono text-surface-200">{{ updater_status.next_event_chase or '—' }}</p>
+                </div>
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-3">
+                    <p class="text-xs text-surface-400 mb-1">Last Chase</p>
+                    <p class="text-sm font-mono text-surface-200">{{ updater_status.last_chase_info or '—' }}</p>
+                </div>
+            </div>
+            {% if updater_status.recent_log %}
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-2">Recent Activity</p>
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 max-h-40 overflow-y-auto">
+                    {% for line in updater_status.recent_log %}
+                    <p class="text-xs font-mono text-surface-400 leading-relaxed">{{ line }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Save to Database -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="database" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Save Events to Database</h3>
+        </div>
+        <div class="p-6 space-y-6">
+
+            <!-- Quick Update -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Quick Update</p>
+                <p class="text-sm text-surface-300 mb-3">Fetch and save events for a recent period. Existing events are overwritten with latest values.</p>
+                <form action="/news/update" method="POST" class="flex flex-row items-end gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-surface-400 mb-1.5">Period</label>
+                        <select name="update_period" class="bg-surface-800 border border-surface-700 text-surface-200 text-sm rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                            <option value="1-week">Last 1 Week</option>
+                            <option value="1-month">Last 1 Month</option>
+                            <option value="2-months">Last 2 Months</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        Update Data
+                    </button>
+                </form>
+            </div>
+
+            <!-- Custom Range Save -->
+            <div class="border-t border-surface-800 pt-6">
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Custom Date Range</p>
+                <p class="text-sm text-surface-300 mb-3">Select a date range to fetch and save events to the database.</p>
+                <form action="/news/save-range" method="POST" class="flex flex-row items-end gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-surface-400 mb-1.5">From</label>
+                        <input type="date" name="from_date" required class="bg-surface-800 border border-surface-700 text-surface-200 text-sm rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-surface-400 mb-1.5">To</label>
+                        <input type="date" name="to_date" required class="bg-surface-800 border border-surface-700 text-surface-200 text-sm rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                    </div>
+                    <button type="submit" class="flex items-center gap-2 bg-surface-700 hover:bg-surface-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        Save to Database
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="shield" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Authentication</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300 leading-relaxed">
+                Every request must include your API key. You can pass it in two ways:
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-2">Header</p>
+                    <code class="text-sm font-mono text-brand-400">X-API-Key: your_api_key</code>
+                </div>
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-2">Query Parameter</p>
+                    <code class="text-sm font-mono text-brand-400">?api_key=your_api_key</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GET /api/news -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center justify-between">
+            <div class="flex flex-row items-center gap-3">
+                <span class="text-xs font-bold uppercase tracking-wider bg-green-900/40 text-green-400 border border-green-800 px-2.5 py-1 rounded-lg">GET</span>
+                <h3 class="text-base font-semibold text-white font-mono">/api/news</h3>
+            </div>
+        </div>
+        <div class="p-6 space-y-6">
+
+            <p class="text-sm text-surface-300 leading-relaxed">
+                Returns economic calendar events. Use <span class="font-mono text-surface-200">from_date</span> + <span class="font-mono text-surface-200">to_date</span> or <span class="font-mono text-surface-200">period</span> (mutually exclusive).
+                Use <span class="font-mono text-surface-200">pretend_date</span> to simulate a different "now" when using <span class="font-mono text-surface-200">period</span>.
+            </p>
+
+            <!-- Parameters Table -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Parameters</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                                <th class="text-left py-3 px-4 font-semibold">Name</th>
+                                <th class="text-left py-3 px-4 font-semibold">Required</th>
+                                <th class="text-left py-3 px-4 font-semibold">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-800">
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">api_key</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 font-semibold">Required</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Your API key (header <span class="font-mono text-surface-200">X-API-Key</span> or query param)</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">from_date</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-amber-900/40 text-amber-400 font-semibold">Either</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Start date (<span class="font-mono text-surface-200">YYYY-MM-DD</span>). Use with <span class="font-mono text-surface-200">to_date</span>.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">to_date</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-amber-900/40 text-amber-400 font-semibold">Either</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">End date (<span class="font-mono text-surface-200">YYYY-MM-DD</span>). Use with <span class="font-mono text-surface-200">from_date</span>.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">period</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-amber-900/40 text-amber-400 font-semibold">Either</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">
+                                    Alternative to date range: <span class="font-mono text-surface-200">last-X-unit</span> or <span class="font-mono text-surface-200">future</span> (with <span class="font-mono text-surface-200">future_limit</span>)<br>
+                                    <span class="text-xs text-surface-400">Units: minutes, hours, days, weeks, months, years</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">future_limit</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-surface-300 font-semibold">Optional</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Used with <span class="font-mono text-surface-200">period=future</span>. Format: <span class="font-mono text-surface-200">next-X-unit</span> (e.g. <span class="font-mono text-surface-200">next-7-days</span>). Works without pretend.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">currencies</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-surface-300 font-semibold">Optional</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Comma-separated currency codes (default: all). See list below.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">impact</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-surface-300 font-semibold">Optional</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300"><span class="font-mono text-surface-200">high</span>, <span class="font-mono text-surface-200">medium</span> (default, includes high), or <span class="font-mono text-surface-200">all</span></td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">event_type_id</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-surface-300 font-semibold">Optional</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Comma-separated event type IDs (8-char hex, e.g. <span class="font-mono text-surface-200">A1B2C3D4</span> or <span class="font-mono text-surface-200">A1B2C3D4,E5F6A7B8</span>)</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">pretend_date</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-surface-300 font-semibold">Optional</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Simulate a different "now" (<span class="font-mono text-surface-200">YYYY-MM-DD</span>). Affects <span class="font-mono text-surface-200">period</span> calculation.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">pretend_time</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-surface-300 font-semibold">Optional</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Time for pretend (<span class="font-mono text-surface-200">HH:MM</span>, default 00:00)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Currencies -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Supported Currencies</p>
+                <div class="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                    {% for code in ["USD", "CAD", "JPY", "EUR", "CHF", "AUD", "NZD", "GBP"] %}
+                    <div class="text-center">
+                        <span class="block text-xs font-mono px-2.5 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-surface-200">{{ code }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Example Response -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Example Response</p>
+                <pre class="bg-surface-800 border border-surface-700 rounded-xl p-5 overflow-x-auto text-sm"><code class="language-json">{
+  "arrissa_data_news": {
+    "from": "2026-02-13",
+    "to": "2026-02-13",
+    "count": 2,
+    "events": [
+      {
+        "event_type_id": "A1B2C3D4",
+        "title": "Core Inflation Rate MoM",
+        "country": "US",
+        "currency": "USD",
+        "indicator": "Core Inflation Rate MoM",
+        "impact": "high",
+        "actual": "0.3%",
+        "previous": "0.2%",
+        "forecast": "0.3%"
+      },
+      {
+        "event_type_id": "E5F6A7B8",
+        "title": "CPI",
+        "country": "US",
+        "currency": "USD",
+        "indicator": "Consumer Price Index CPI",
+        "impact": "medium",
+        "actual": "312.5",
+        "previous": "311.2",
+        "forecast": "312.0"
+      }
+    ]
+  }
+}</code></pre>
+            </div>
+
+            <!-- Event Fields -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Event Fields</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                                <th class="text-left py-3 px-4 font-semibold">Field</th>
+                                <th class="text-left py-3 px-4 font-semibold">Type</th>
+                                <th class="text-left py-3 px-4 font-semibold">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-800">
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">event_type_id</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">string</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Consistent 8-char hex ID. Same event (e.g. US CPI) always has the same ID.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">title</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">string</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Event name (e.g. CPI, NFP, Interest Rate Decision)</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">country</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">string</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Country code (US, DE, GB, etc.)</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">currency</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">string</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Currency code (USD, EUR, GBP, etc.)</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">impact</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">string</td>
+                                <td class="py-3 px-4 text-sm text-surface-300"><span class="font-mono text-red-400">high</span> or <span class="font-mono text-amber-400">medium</span></td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">actual</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">string | null</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Actual released value (null if not yet released)</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">previous</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">string | null</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Previous period value</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">forecast</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">string | null</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Consensus forecast value</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Try It Examples -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Try It</p>
+                <div class="space-y-3">
+
+                    <!-- Example 1: USD events today -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">USD events today</p>
+                            <button onclick="tryExample(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                <span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/news?api_key={{ api_key }}&from_date={{ now_date }}&to_date={{ now_date }}&currencies=USD"
+                           target="_blank"
+                           class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            GET /api/news?from_date=<span class="text-amber-400">{{ now_date }}</span>&amp;to_date=<span class="text-amber-400">{{ now_date }}</span>&amp;currencies=<span class="text-amber-400">USD</span>
+                        </a>
+                    </div>
+
+                    <!-- Example 2: Period - last 7 days, high impact -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Last 7 days, high impact only</p>
+                            <button onclick="tryExample(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                <span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/news?api_key={{ api_key }}&period=last-7-days&impact=high"
+                           target="_blank"
+                           class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            GET /api/news?period=<span class="text-amber-400">last-7-days</span>&amp;impact=<span class="text-amber-400">high</span>
+                        </a>
+                    </div>
+
+                    <!-- Example 3: Filter by event_type_id(s) -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Filter by one or more event type IDs</p>
+                            <button onclick="tryExample(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                <span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/news?api_key={{ api_key }}&period=last-30-days&event_type_id=A1B2C3D4,E5F6A7B8"
+                           target="_blank"
+                           class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            GET /api/news?period=<span class="text-amber-400">last-30-days</span>&amp;event_type_id=<span class="text-amber-400">A1B2C3D4,E5F6A7B8</span>
+                        </a>
+                    </div>
+
+                    <!-- Example 4: Pretend date with period -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Pretend it's Jan 15 — last 7 days of EUR events</p>
+                            <button onclick="tryExample(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                <span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/news?api_key={{ api_key }}&period=last-7-days&pretend_date=2026-01-15&currencies=EUR"
+                           target="_blank"
+                           class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            GET /api/news?period=<span class="text-amber-400">last-7-days</span>&amp;pretend_date=<span class="text-amber-400">2026-01-15</span>&amp;currencies=<span class="text-amber-400">EUR</span>
+                        </a>
+                    </div>
+
+                    <!-- Example 5: Future — next 3 days of USD events -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Future — next 3 days of USD high-impact events</p>
+                            <button onclick="tryExample(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                <span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/news?api_key={{ api_key }}&period=future&future_limit=next-3-days&currencies=USD&impact=high"
+                           target="_blank"
+                           class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            GET /api/news?period=<span class="text-amber-400">future</span>&amp;future_limit=<span class="text-amber-400">next-3-days</span>&amp;currencies=<span class="text-amber-400">USD</span>&amp;impact=<span class="text-amber-400">high</span>
+                        </a>
+                    </div>
+
+                    <!-- Example 6: Future with pretend — next 2 weeks from Jan 1 -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Future from pretend — next 2 weeks from Jan 1</p>
+                            <button onclick="tryExample(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                <span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/news?api_key={{ api_key }}&period=future&future_limit=next-2-weeks&pretend_date=2026-01-01"
+                           target="_blank"
+                           class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            GET /api/news?period=<span class="text-amber-400">future</span>&amp;future_limit=<span class="text-amber-400">next-2-weeks</span>&amp;pretend_date=<span class="text-amber-400">2026-01-01</span>
+                        </a>
+                    </div>
+
+                    <!-- Example 7: cURL -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">cURL with header</p>
+                            <button onclick="copyCurl()" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                        <pre id="curlExample" class="text-sm overflow-x-auto"><code class="language-bash">curl -H "X-API-Key: {{ api_key }}" \
+     "{{ site_url }}/api/news?period=last-7-days&currencies=USD,GBP&impact=high"</code></pre>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- POST /api/news/save -->
+            <div class="border-t border-surface-800 pt-6">
+                <div class="flex flex-row items-center gap-3 mb-4">
+                    <span class="text-xs font-bold uppercase tracking-wider bg-blue-900/40 text-blue-400 border border-blue-800 px-2.5 py-1 rounded-lg">POST</span>
+                    <h3 class="text-base font-semibold text-white font-mono">/api/news/save</h3>
+                </div>
+                <p class="text-sm text-surface-300 mb-4">
+                    Fetch and save events to the database. Existing events are overwritten with latest values. Send JSON body:
+                </p>
+                <pre class="bg-surface-800 border border-surface-700 rounded-xl p-5 overflow-x-auto text-sm mb-3"><code class="language-bash">curl -X POST -H "X-API-Key: {{ api_key }}" \
+     -H "Content-Type: application/json" \
+     -d '{"period": "last-7-days", "currencies": "USD,EUR"}' \
+     "{{ site_url }}/api/news/save"</code></pre>
+                <p class="text-xs text-surface-400">Response: <span class="font-mono text-surface-200">{"saved": 42, "updated": 5, "total_fetched": 47}</span></p>
+            </div>
+
+            <!-- Error Responses -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Error Responses</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                                <th class="text-left py-3 px-4 font-semibold">Code</th>
+                                <th class="text-left py-3 px-4 font-semibold">Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-800">
+                            <tr>
+                                <td class="py-3 px-4"><span class="text-xs font-mono px-2.5 py-1 rounded-lg bg-red-900/40 text-red-400 font-semibold">401</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Missing or invalid API key</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4"><span class="text-xs font-mono px-2.5 py-1 rounded-lg bg-red-900/40 text-red-400 font-semibold">400</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Missing or invalid date/period parameters</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4"><span class="text-xs font-mono px-2.5 py-1 rounded-lg bg-amber-900/40 text-amber-400 font-semibold">502</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Failed to fetch events from upstream source</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Event Type ID Note -->
+            <div class="flex flex-row items-start gap-3 bg-surface-800/50 border border-surface-700 rounded-xl p-4">
+                <i data-lucide="info" class="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                <p class="text-xs text-surface-400">The <span class="font-mono text-brand-400">event_type_id</span> is a deterministic 8-character hex derived from the event title and country. For example, US CPI always produces the same ID, making it easy to track the same event across different dates. Use the <span class="font-mono text-brand-400">event_type_id</span> filter with one or more comma-separated IDs to get all occurrences of specific events.</p>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+function tryExample(btn) {
+    const link = btn.closest('.bg-surface-800').querySelector('a');
+    if (link) window.open(link.href, '_blank');
+}
+function copyCurl() {
+    const el = document.getElementById('curlExample');
+    navigator.clipboard.writeText(el.innerText);
+}
+
+
+</script>
+
+{% endblock %}

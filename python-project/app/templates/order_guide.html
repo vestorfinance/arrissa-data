@@ -1,0 +1,582 @@
+{% extends "layout.html" %}
+{% block title %}Order API — {{ app_name }}{% endblock %}
+{% block page_title %}Order API{% endblock %}
+{% block content %}
+
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Introduction -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="book-open" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Overview</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300 leading-relaxed">
+                The {{ app_name }} Order API gives you access to your TradeLocker <strong class="text-white">active orders</strong>,
+                <strong class="text-white">order history</strong> (filled, cancelled, rejected), and <strong class="text-white">open positions</strong>.
+                Each endpoint returns named fields resolved automatically from TradeLocker's
+                <span class="font-mono text-brand-400">/trade/config</span> route.
+            </p>
+            <div class="flex flex-row items-start gap-3 bg-surface-800/50 border border-surface-700 rounded-xl p-4">
+                <i data-lucide="info" class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                <p class="text-sm text-surface-300">
+                    Find your API key on the <a href="/settings" class="text-brand-400 hover:text-brand-300 underline">Settings</a> page.
+                    Your Arrissa Account IDs are shown on the <a href="/dashboard" class="text-brand-400 hover:text-brand-300 underline">Dashboard</a> and <a href="/brokers" class="text-brand-400 hover:text-brand-300 underline">Brokers</a> pages.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="shield" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Authentication</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300 leading-relaxed">
+                Every request must include your API key. You can pass it in two ways:
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-2">Header</p>
+                    <code class="text-sm font-mono text-brand-400">X-API-Key: your_api_key</code>
+                </div>
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-2">Query Parameter</p>
+                    <code class="text-sm font-mono text-brand-400">?api_key=your_api_key</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- GET /api/orders -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center justify-between">
+            <div class="flex flex-row items-center gap-3">
+                <span class="text-xs font-bold uppercase tracking-wider bg-green-900/40 text-green-400 border border-green-800 px-2.5 py-1 rounded-lg">GET</span>
+                <h3 class="text-base font-semibold text-white font-mono">/api/orders</h3>
+            </div>
+            <span class="text-xs text-surface-400 font-medium">Active Orders</span>
+        </div>
+        <div class="p-6 space-y-6">
+
+            <p class="text-sm text-surface-300 leading-relaxed">
+                Returns all <strong class="text-white">non-final</strong> (active / pending) orders for the account.
+                These are orders that have not yet been filled, cancelled, or rejected.
+                Use optional time and instrument filters to narrow results.
+            </p>
+
+            <!-- Parameters -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Parameters</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                                <th class="text-left py-3 px-4 font-semibold">Name</th>
+                                <th class="text-left py-3 px-4 font-semibold">In</th>
+                                <th class="text-left py-3 px-4 font-semibold">Required</th>
+                                <th class="text-left py-3 px-4 font-semibold">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-800">
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">api_key</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Header / Query</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 font-semibold">Required</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Your API key (header: <span class="font-mono text-surface-200">X-API-Key</span>)</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">arrissa_account_id</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Header / Query</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 font-semibold">Required</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Your 6-character account ID (header: <span class="font-mono text-surface-200">X-Arrissa-Account-Id</span>)</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">from</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Query</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-surface-300 font-semibold">Optional</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Unix timestamp in milliseconds (UTC) — start of time range</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">to</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Query</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-surface-300 font-semibold">Optional</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Unix timestamp in milliseconds (UTC) — end of time range</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">tradable_instrument_id</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Query</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-surface-300 font-semibold">Optional</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Filter by instrument (get IDs from the Instruments API)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Order Columns -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Order Fields</p>
+                <p class="text-sm text-surface-300 mb-3">
+                    Each order object contains these fields (resolved from <span class="font-mono text-brand-400">ordersConfig</span>):
+                </p>
+                {% if orders_columns %}
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    {% for col in orders_columns %}
+                    <div class="text-center">
+                        <span class="block text-xs font-mono px-2 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-surface-200 truncate" title="{{ col }}">{{ col }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="flex flex-row items-start gap-3 bg-surface-800/50 border border-surface-700 rounded-xl p-4">
+                    <i data-lucide="info" class="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5"></i>
+                    <p class="text-xs text-surface-400">Connect a TradeLocker account to see the available field names.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Response Example -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Response Example</p>
+                <pre class="bg-surface-800 border border-surface-700 rounded-xl p-4 text-sm font-mono overflow-x-auto"><code class="language-json">{
+  "arrissa_data_HEROFX_live": {
+    "arrissa_account_id": "F76161",
+    "count": 2,
+    "orders": [
+      {
+        "id": "7277816997907673698",
+        "tradableInstrumentId": "206",
+        "routeId": "1152263",
+        "qty": "100.0",
+        "side": "sell",
+        "type": "limit",
+        "status": "New",
+        "filledQty": null,
+        "avgPrice": null,
+        "price": "91011.74",
+        "stopPrice": null,
+        "validity": "GTC",
+        "expireDate": null,
+        "createdDate": "1767886346666",
+        "lastModified": "1767886346000",
+        "isOpen": "true",
+        "positionId": null,
+        "stopLoss": null,
+        "stopLossType": null,
+        "takeProfit": null,
+        "takeProfitType": null,
+        "strategyId": null
+      }
+    ]
+  }
+}</code></pre>
+            </div>
+
+            <!-- Try it examples -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Examples</p>
+                <div class="space-y-3">
+
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Get all active orders</p>
+                            <button onclick="tryExample(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                <span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/orders?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}"
+                           target="_blank"
+                           class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            GET /api/orders?arrissa_account_id=<span class="text-amber-400">{{ example_account_id }}</span>
+                        </a>
+                    </div>
+
+                    <!-- cURL -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">cURL — active orders with headers</p>
+                            <button onclick="copyCurl('curlOrders')" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                        <pre id="curlOrders" class="text-sm overflow-x-auto"><code class="language-bash">curl -H "X-API-Key: {{ api_key }}" \
+     -H "X-Arrissa-Account-Id: {{ example_account_id or 'ACCT_ID' }}" \
+     "{{ site_url }}/api/orders"</code></pre>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- GET /api/orders-history -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center justify-between">
+            <div class="flex flex-row items-center gap-3">
+                <span class="text-xs font-bold uppercase tracking-wider bg-green-900/40 text-green-400 border border-green-800 px-2.5 py-1 rounded-lg">GET</span>
+                <h3 class="text-base font-semibold text-white font-mono">/api/orders-history</h3>
+            </div>
+            <span class="text-xs text-surface-400 font-medium">Order History</span>
+        </div>
+        <div class="p-6 space-y-6">
+
+            <p class="text-sm text-surface-300 leading-relaxed">
+                Returns all <strong class="text-white">final</strong> orders — filled, cancelled, or rejected.
+                Includes a <span class="font-mono text-brand-400">has_more</span> flag indicating if additional history exists for the chosen timeframe.
+            </p>
+
+            <!-- Parameters -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Parameters</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                                <th class="text-left py-3 px-4 font-semibold">Name</th>
+                                <th class="text-left py-3 px-4 font-semibold">In</th>
+                                <th class="text-left py-3 px-4 font-semibold">Required</th>
+                                <th class="text-left py-3 px-4 font-semibold">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-800">
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">api_key</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Header / Query</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 font-semibold">Required</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Your API key</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">arrissa_account_id</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Header / Query</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 font-semibold">Required</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Your 6-character account ID</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">from</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Query</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-surface-300 font-semibold">Optional</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Unix timestamp in milliseconds (UTC) — start of time range</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">to</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Query</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-surface-300 font-semibold">Optional</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Unix timestamp in milliseconds (UTC) — end of time range</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">tradable_instrument_id</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Query</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-surface-300 font-semibold">Optional</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Filter by instrument</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Order History Columns -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Order History Fields</p>
+                {% if orders_history_columns %}
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    {% for col in orders_history_columns %}
+                    <div class="text-center">
+                        <span class="block text-xs font-mono px-2 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-surface-200 truncate" title="{{ col }}">{{ col }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="flex flex-row items-start gap-3 bg-surface-800/50 border border-surface-700 rounded-xl p-4">
+                    <i data-lucide="info" class="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5"></i>
+                    <p class="text-xs text-surface-400">Connect a TradeLocker account to see the available field names.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Response -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Response Example</p>
+                <pre class="bg-surface-800 border border-surface-700 rounded-xl p-4 text-sm font-mono overflow-x-auto"><code class="language-json">{
+  "arrissa_data_HEROFX_live": {
+    "arrissa_account_id": "F76161",
+    "count": 1,
+    "has_more": false,
+    "orders_history": [
+      {
+        "id": "7277816997907785466",
+        "tradableInstrumentId": "206",
+        "routeId": "1152263",
+        "qty": "10.00",
+        "side": "sell",
+        "type": "market",
+        "status": "Filled",
+        "filledQty": "10",
+        "avgPrice": "90263",
+        "price": "90300.67",
+        "stopPrice": "0",
+        "validity": "IOC",
+        "expireDate": null,
+        "createdDate": "1767951991995",
+        "lastModified": "1767951992000",
+        "isOpen": "false",
+        "positionId": "7277816997846856994",
+        "stopLoss": null,
+        "stopLossType": null,
+        "takeProfit": null,
+        "takeProfitType": null,
+        "strategyId": ""
+      }
+    ]
+  }
+}</code></pre>
+                <div class="flex flex-row items-start gap-3 bg-surface-800/50 border border-surface-700 rounded-xl p-4 mt-3">
+                    <i data-lucide="info" class="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                    <p class="text-xs text-surface-400">
+                        The <span class="font-mono text-brand-400">has_more</span> flag is <span class="text-white">true</span> when the server has more history than was returned. Use the <span class="font-mono text-brand-400">from</span> / <span class="font-mono text-brand-400">to</span> params to paginate.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Try it -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Examples</p>
+                <div class="space-y-3">
+
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Get all order history</p>
+                            <button onclick="tryExample(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                <span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/orders-history?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}"
+                           target="_blank"
+                           class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            GET /api/orders-history?arrissa_account_id=<span class="text-amber-400">{{ example_account_id }}</span>
+                        </a>
+                    </div>
+
+                    <!-- cURL -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">cURL — order history with headers</p>
+                            <button onclick="copyCurl('curlHistory')" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                        <pre id="curlHistory" class="text-sm overflow-x-auto"><code class="language-bash">curl -H "X-API-Key: {{ api_key }}" \
+     -H "X-Arrissa-Account-Id: {{ example_account_id or 'ACCT_ID' }}" \
+     "{{ site_url }}/api/orders-history"</code></pre>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- GET /api/positions -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center justify-between">
+            <div class="flex flex-row items-center gap-3">
+                <span class="text-xs font-bold uppercase tracking-wider bg-green-900/40 text-green-400 border border-green-800 px-2.5 py-1 rounded-lg">GET</span>
+                <h3 class="text-base font-semibold text-white font-mono">/api/positions</h3>
+            </div>
+            <span class="text-xs text-surface-400 font-medium">Open Positions</span>
+        </div>
+        <div class="p-6 space-y-6">
+
+            <p class="text-sm text-surface-300 leading-relaxed">
+                Returns all <strong class="text-white">currently open positions</strong> for the account, including entry price, side, quantity, and unrealised PnL.
+            </p>
+
+            <!-- Parameters -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Parameters</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                                <th class="text-left py-3 px-4 font-semibold">Name</th>
+                                <th class="text-left py-3 px-4 font-semibold">In</th>
+                                <th class="text-left py-3 px-4 font-semibold">Required</th>
+                                <th class="text-left py-3 px-4 font-semibold">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-800">
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">api_key</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Header / Query</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 font-semibold">Required</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Your API key</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">arrissa_account_id</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Header / Query</td>
+                                <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 font-semibold">Required</span></td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Your 6-character account ID</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Position Columns -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Position Fields</p>
+                {% if positions_columns %}
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    {% for col in positions_columns %}
+                    <div class="text-center">
+                        <span class="block text-xs font-mono px-2 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-surface-200 truncate" title="{{ col }}">{{ col }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="flex flex-row items-start gap-3 bg-surface-800/50 border border-surface-700 rounded-xl p-4">
+                    <i data-lucide="info" class="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5"></i>
+                    <p class="text-xs text-surface-400">Connect a TradeLocker account to see the available field names.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Response -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Response Example</p>
+                <pre class="bg-surface-800 border border-surface-700 rounded-xl p-4 text-sm font-mono overflow-x-auto"><code class="language-json">{
+  "arrissa_data_HEROFX_live": {
+    "arrissa_account_id": "F76161",
+    "count": 1,
+    "positions": [
+      {
+        "id": "7277816997846858725",
+        "tradableInstrumentId": "206",
+        "routeId": "1152263",
+        "side": "buy",
+        "qty": "10",
+        "avgPrice": "90415.16",
+        "stopLossId": null,
+        "takeProfitId": null,
+        "openDate": "1767952099156",
+        "unrealizedPl": "-458.10",
+        "strategyId": null
+      }
+    ]
+  }
+}</code></pre>
+            </div>
+
+            <!-- Try it -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Examples</p>
+                <div class="space-y-3">
+
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Get all open positions</p>
+                            <button onclick="tryExample(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                <span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/positions?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}"
+                           target="_blank"
+                           class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            GET /api/positions?arrissa_account_id=<span class="text-amber-400">{{ example_account_id }}</span>
+                        </a>
+                    </div>
+
+                    <!-- cURL -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">cURL — open positions with headers</p>
+                            <button onclick="copyCurl('curlPositions')" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                        <pre id="curlPositions" class="text-sm overflow-x-auto"><code class="language-bash">curl -H "X-API-Key: {{ api_key }}" \
+     -H "X-Arrissa-Account-Id: {{ example_account_id or 'ACCT_ID' }}" \
+     "{{ site_url }}/api/positions"</code></pre>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Error Responses (shared) -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Error Responses</h3>
+        </div>
+        <div class="p-6">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                            <th class="text-left py-3 px-4 font-semibold">Code</th>
+                            <th class="text-left py-3 px-4 font-semibold">Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-800">
+                        <tr>
+                            <td class="py-3 px-4"><span class="text-xs font-mono px-2.5 py-1 rounded-lg bg-red-900/40 text-red-400 font-semibold">401</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Missing or invalid API key</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4"><span class="text-xs font-mono px-2.5 py-1 rounded-lg bg-red-900/40 text-red-400 font-semibold">400</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Missing arrissa_account_id</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4"><span class="text-xs font-mono px-2.5 py-1 rounded-lg bg-amber-900/40 text-amber-400 font-semibold">404</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Account not found for this user</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4"><span class="text-xs font-mono px-2.5 py-1 rounded-lg bg-amber-900/40 text-amber-400 font-semibold">502</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Failed to reach TradeLocker — token may be expired</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function tryExample(btn) {
+    const link = btn.closest('.bg-surface-800').querySelector('a');
+    if (link) window.open(link.href, '_blank');
+}
+function copyCurl(id) {
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = event.currentTarget.querySelector('span');
+        if (btn) {
+            const orig = btn.textContent;
+            btn.textContent = 'Copied';
+            setTimeout(() => btn.textContent = orig, 2000);
+        }
+    });
+}
+</script>
+
+{% endblock %}

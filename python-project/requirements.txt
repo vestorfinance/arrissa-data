@@ -1,0 +1,10 @@
+sqlalchemy
+pymysql
+redis
+python-dotenv
+flask
+requests
+mcp[cli]
+sentence-transformers
+numpy
+faiss-cpu

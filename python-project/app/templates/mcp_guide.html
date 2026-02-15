@@ -1,0 +1,638 @@
+{% extends "layout.html" %}
+{% block title %}MCP Server — {{ app_name }}{% endblock %}
+{% block page_title %}MCP Server{% endblock %}
+{% block content %}
+
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Introduction -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="cpu" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Overview</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300 leading-relaxed">
+                The {{ app_name }} <strong class="text-white">MCP Server</strong> (Model Context Protocol) exposes the entire trading API
+                as <strong class="text-white">18 tools</strong> that AI assistants like
+                <strong class="text-white">Claude Desktop</strong>, <strong class="text-white">VS Code Copilot</strong>,
+                and <strong class="text-white">Cursor</strong> can call directly.
+                This means you can trade, fetch market data, analyze charts, read economic news, and more — all through natural language conversations with your AI assistant.
+            </p>
+            <div class="flex flex-row items-start gap-3 bg-surface-800/50 border border-surface-700 rounded-xl p-4">
+                <i data-lucide="info" class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                <p class="text-sm text-surface-300">
+                    The MCP server acts as a bridge — it receives requests from your AI assistant and forwards them to the
+                    {{ app_name }} Flask API running on <span class="font-mono text-brand-400">{{ site_url }}</span>.
+                    Both services must be running for MCP tools to work.
+                </p>
+            </div>
+            <div class="flex flex-row items-start gap-3 bg-surface-800/50 border border-surface-700 rounded-xl p-4">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5"></i>
+                <p class="text-sm text-surface-300">
+                    <strong class="text-white">Warning:</strong> Trading tools place <strong class="text-white">real orders</strong> on your account.
+                    Use a demo account when testing. Always review trade confirmations from your AI assistant before approving.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prerequisites -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="check-circle-2" class="w-5 h-5 text-green-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Prerequisites</h3>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                    <div class="flex flex-row items-center gap-2 mb-2">
+                        <i data-lucide="server" class="w-4 h-4 text-brand-400 flex-shrink-0"></i>
+                        <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Flask API Running</p>
+                    </div>
+                    <p class="text-sm text-surface-300">The {{ app_name }} server must be running on <span class="font-mono text-brand-400">{{ site_url }}</span></p>
+                </div>
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                    <div class="flex flex-row items-center gap-2 mb-2">
+                        <i data-lucide="key" class="w-4 h-4 text-brand-400 flex-shrink-0"></i>
+                        <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">API Key</p>
+                    </div>
+                    <p class="text-sm text-surface-300">Your API key from the <a href="/settings" class="text-brand-400 hover:text-brand-300 underline">Settings</a> page</p>
+                </div>
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                    <div class="flex flex-row items-center gap-2 mb-2">
+                        <i data-lucide="package" class="w-4 h-4 text-brand-400 flex-shrink-0"></i>
+                        <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Python MCP SDK</p>
+                    </div>
+                    <p class="text-sm text-surface-300"><span class="font-mono text-brand-400">pip install "mcp[cli]"</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auto-Detected Configuration -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="scan" class="w-5 h-5 text-green-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Your Pre-Configured Credentials</h3>
+        </div>
+        <div class="p-6 space-y-3">
+            <div class="flex flex-row items-start gap-3 bg-green-900/20 border border-green-800/30 rounded-xl p-4">
+                <i data-lucide="check-circle-2" class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5"></i>
+                <p class="text-sm text-surface-300">
+                    The config snippets below are <strong class="text-white">auto-generated</strong> with your credentials baked in.
+                    Your AI assistant will <strong class="text-white">never need to ask</strong> for your API key or account ID — they're passed as environment variables.
+                </p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-1.5">Python Executable</p>
+                    <p class="text-sm font-mono text-brand-400 break-all">{{ python_path }}</p>
+                </div>
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-1.5">MCP Server Script</p>
+                    <p class="text-sm font-mono text-brand-400 break-all">{{ mcp_server_path }}</p>
+                </div>
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-1.5">API Key</p>
+                    <p class="text-sm font-mono text-brand-400 break-all">{{ api_key[:8] }}...{{ api_key[-4:] }}</p>
+                </div>
+            </div>
+            <div class="flex flex-row items-start gap-3 bg-surface-800/50 border border-surface-700 rounded-xl p-4">
+                <i data-lucide="info" class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                <p class="text-sm text-surface-300">
+                    Two environment variables are injected into the MCP server:
+                    <span class="font-mono text-brand-400">ARRISSA_API_KEY</span> and
+                    <span class="font-mono text-brand-400">ARRISSA_API_URL</span>.
+                    Accounts are resolved dynamically by nickname — set nicknames on the
+                    <a href="/brokers" class="text-brand-400 hover:text-brand-300 underline">Brokers</a> page
+                    (e.g. "my demo", "live USD") so you can say <em class="text-white">"how many trades on my demo account?"</em>
+                    without ever typing an account ID.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup for Claude Desktop -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="message-square" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Setup — Claude Desktop</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300 leading-relaxed">
+                Add the following to your Claude Desktop config file:
+            </p>
+
+            <!-- Step 1: Open config -->
+            <div class="space-y-3">
+                <div class="flex flex-row items-center gap-3">
+                    <span class="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">1</span>
+                    <p class="text-sm font-semibold text-white">Open the Claude Desktop config file</p>
+                </div>
+                <div class="ml-10">
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 space-y-2">
+                        <div>
+                            <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-1.5">macOS</p>
+                            <code class="text-sm font-mono text-brand-400">~/Library/Application Support/Claude/claude_desktop_config.json</code>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-1.5">Windows</p>
+                            <code class="text-sm font-mono text-brand-400">%APPDATA%\Claude\claude_desktop_config.json</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Add config -->
+            <div class="space-y-3">
+                <div class="flex flex-row items-center gap-3">
+                    <span class="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">2</span>
+                    <p class="text-sm font-semibold text-white">Add the MCP server configuration</p>
+                </div>
+                <div class="ml-10">
+                    <div class="relative">
+                        <button onclick="copyConfig('claude-config')" class="absolute top-3 right-3 flex flex-row items-center gap-1.5 text-xs text-surface-400 hover:text-brand-400 transition bg-surface-900/80 px-2.5 py-1.5 rounded-lg">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i><span>Copy</span>
+                        </button>
+                        <pre id="claude-config" class="bg-surface-800 border border-surface-700 rounded-xl p-4 text-sm font-mono overflow-x-auto"><code class="language-json">{
+  "mcpServers": {
+    "arrissa-trading-api": {
+      "command": "{{ python_path }}",
+      "args": [
+        "{{ mcp_server_path }}"
+      ],
+      "env": {
+        "ARRISSA_API_URL": "{{ site_url_value }}",
+        "ARRISSA_API_KEY": "{{ api_key }}"
+      }
+    }
+  }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Restart -->
+            <div class="space-y-3">
+                <div class="flex flex-row items-center gap-3">
+                    <span class="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">3</span>
+                    <p class="text-sm font-semibold text-white">Restart Claude Desktop</p>
+                </div>
+                <div class="ml-10">
+                    <p class="text-sm text-surface-300">Quit and reopen Claude Desktop. You should see a <i data-lucide="hammer" class="w-4 h-4 inline text-surface-400"></i> tools icon in the chat input — click it to confirm the Arrissa tools are loaded.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup for VS Code -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="code" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Setup — VS Code (GitHub Copilot)</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300 leading-relaxed">
+                Add a <span class="font-mono text-brand-400">.vscode/mcp.json</span> file to your project root:
+            </p>
+            <div class="relative">
+                <button onclick="copyConfig('vscode-config')" class="absolute top-3 right-3 flex flex-row items-center gap-1.5 text-xs text-surface-400 hover:text-brand-400 transition bg-surface-900/80 px-2.5 py-1.5 rounded-lg">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i><span>Copy</span>
+                </button>
+                <pre id="vscode-config" class="bg-surface-800 border border-surface-700 rounded-xl p-4 text-sm font-mono overflow-x-auto"><code class="language-json">{
+  "servers": {
+    "arrissa-trading-api": {
+      "command": "{{ python_path }}",
+      "args": [
+        "{{ mcp_server_path }}"
+      ],
+      "env": {
+        "ARRISSA_API_URL": "{{ site_url_value }}",
+        "ARRISSA_API_KEY": "{{ api_key }}"
+      }
+    }
+  }
+}</code></pre>
+            </div>
+            <p class="text-sm text-surface-300">Then open Copilot Chat in <strong class="text-white">Agent mode</strong> — the Arrissa tools will appear automatically.</p>
+        </div>
+    </div>
+
+    <!-- Setup for Cursor -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="mouse-pointer-2" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Setup — Cursor</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300 leading-relaxed">
+                Create a <span class="font-mono text-brand-400">.cursor/mcp.json</span> file in your project root:
+            </p>
+            <div class="relative">
+                <button onclick="copyConfig('cursor-config')" class="absolute top-3 right-3 flex flex-row items-center gap-1.5 text-xs text-surface-400 hover:text-brand-400 transition bg-surface-900/80 px-2.5 py-1.5 rounded-lg">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i><span>Copy</span>
+                </button>
+                <pre id="cursor-config" class="bg-surface-800 border border-surface-700 rounded-xl p-4 text-sm font-mono overflow-x-auto"><code class="language-json">{
+  "mcpServers": {
+    "arrissa-trading-api": {
+      "command": "{{ python_path }}",
+      "args": [
+        "{{ mcp_server_path }}"
+      ],
+      "env": {
+        "ARRISSA_API_URL": "{{ site_url_value }}",
+        "ARRISSA_API_KEY": "{{ api_key }}"
+      }
+    }
+  }
+}</code></pre>
+            </div>
+            <p class="text-sm text-surface-300">Open Cursor Settings → MCP to verify the server is connected and showing green.</p>
+        </div>
+    </div>
+
+    <!-- Available Tools (18 tools) -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center justify-between">
+            <div class="flex flex-row items-center gap-3">
+                <i data-lucide="wrench" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+                <h3 class="text-base font-semibold text-white">Available Tools</h3>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-brand-600/20 text-brand-400 border border-brand-600/30">19 Tools</span>
+        </div>
+        <div class="p-6 space-y-6">
+
+            <!-- Account Management -->
+            <div>
+                <div class="flex flex-row items-center gap-2 mb-3">
+                    <i data-lucide="landmark" class="w-4 h-4 text-surface-400 flex-shrink-0"></i>
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Account Management</p>
+                </div>
+                <div class="space-y-2">
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">list_my_accounts</code>
+                        <p class="text-sm text-surface-300">List all trading accounts with nicknames, balances, and IDs — call this first to discover accounts</p>
+                    </div>
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">get_synced_accounts</code>
+                        <p class="text-sm text-surface-300">Get all TradeLocker accounts synced for a user, including arrissa_account_id values</p>
+                    </div>
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">add_tradelocker_credentials</code>
+                        <p class="text-sm text-surface-300">Connect a new TradeLocker brokerage account (authenticate + sync accounts)</p>
+                    </div>
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">refresh_tradelocker_credentials</code>
+                        <p class="text-sm text-surface-300">Refresh expired tokens and re-sync accounts for a credential</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instruments -->
+            <div>
+                <div class="flex flex-row items-center gap-2 mb-3">
+                    <i data-lucide="file-code" class="w-4 h-4 text-surface-400 flex-shrink-0"></i>
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Instruments</p>
+                </div>
+                <div class="space-y-2">
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">get_instruments</code>
+                        <p class="text-sm text-surface-300">List all tradeable symbols on an account — filter by search text or type (FOREX, CRYPTO, etc.)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Details -->
+            <div>
+                <div class="flex flex-row items-center gap-2 mb-3">
+                    <i data-lucide="user-circle" class="w-4 h-4 text-surface-400 flex-shrink-0"></i>
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Account Details</p>
+                </div>
+                <div class="space-y-2">
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">get_account_details</code>
+                        <p class="text-sm text-surface-300">Real-time account state — balance, equity, margin, free margin, unrealised P&L</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Market Data & Charts -->
+            <div>
+                <div class="flex flex-row items-center gap-2 mb-3">
+                    <i data-lucide="candlestick-chart" class="w-4 h-4 text-surface-400 flex-shrink-0"></i>
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Market Data & Charts</p>
+                </div>
+                <div class="space-y-2">
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">get_market_data</code>
+                        <p class="text-sm text-surface-300">OHLCV candlestick bars with moving averages, S&R levels, order blocks, time-travel</p>
+                    </div>
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">get_chart_image</code>
+                        <p class="text-sm text-surface-300">Generate TradingView-style candlestick chart PNG — with position drawing (entry/SL/TP)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders & Positions -->
+            <div>
+                <div class="flex flex-row items-center gap-2 mb-3">
+                    <i data-lucide="list-ordered" class="w-4 h-4 text-surface-400 flex-shrink-0"></i>
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Orders & Positions</p>
+                </div>
+                <div class="space-y-2">
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">get_orders</code>
+                        <p class="text-sm text-surface-300">All active (pending) orders with symbol names and readable timestamps</p>
+                    </div>
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">get_orders_history</code>
+                        <p class="text-sm text-surface-300">Order history — filled, cancelled, and rejected orders</p>
+                    </div>
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">get_positions</code>
+                        <p class="text-sm text-surface-300">Currently open positions — symbol, side, volume, entry price, P&L</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trading -->
+            <div>
+                <div class="flex flex-row items-center gap-2 mb-3">
+                    <i data-lucide="arrow-left-right" class="w-4 h-4 text-surface-400 flex-shrink-0"></i>
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Trading</p>
+                </div>
+                <div class="space-y-2">
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3">
+                            <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">trade</code>
+                            <p class="text-sm text-surface-300">Execute any trading action via a unified tool</p>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                            {% for action in ["BUY", "SELL", "BUY_LIMIT", "SELL_LIMIT", "BUY_STOP", "SELL_STOP", "CLOSE", "CLOSE_ALL", "CLOSE_LOSS", "CLOSE_PROFIT", "MODIFY_TP", "MODIFY_SL", "BREAK_EVEN", "BREAK_EVEN_ALL", "TRAIL_SL", "DELETE_ORDER", "DELETE_ALL_ORDERS", "MODIFY_ORDER"] %}
+                            <span class="text-xs font-mono px-2 py-1 rounded-lg 
+                                {% if action in ['BUY', 'BUY_LIMIT', 'BUY_STOP'] %}bg-green-900/40 text-green-400 border border-green-800
+                                {% elif action in ['SELL', 'SELL_LIMIT', 'SELL_STOP'] %}bg-red-900/40 text-red-400 border border-red-800
+                                {% elif action.startswith('CLOSE') %}bg-amber-900/40 text-amber-400 border border-amber-800
+                                {% elif action.startswith('MODIFY') or action == 'BREAK_EVEN' or action == 'BREAK_EVEN_ALL' or action == 'TRAIL_SL' %}bg-blue-900/40 text-blue-400 border border-blue-800
+                                {% else %}bg-surface-700 text-surface-300 border border-surface-600
+                                {% endif %}">{{ action }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">get_trade_history</code>
+                        <p class="text-sm text-surface-300">Recent filled trades — today, last-hour, last-10, last-7days, last-30days</p>
+                    </div>
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">get_profit_summary</code>
+                        <p class="text-sm text-surface-300">P&L summary — today, this-week, this-month, or custom period</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Economic News -->
+            <div>
+                <div class="flex flex-row items-center gap-2 mb-3">
+                    <i data-lucide="newspaper" class="w-4 h-4 text-surface-400 flex-shrink-0"></i>
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Economic News</p>
+                </div>
+                <div class="space-y-2">
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">get_economic_news</code>
+                        <p class="text-sm text-surface-300">Economic calendar events — filter by dates, currencies, impact level</p>
+                    </div>
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">save_economic_news</code>
+                        <p class="text-sm text-surface-300">Fetch and save economic events to the database for later querying</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Web Scraping -->
+            <div>
+                <div class="flex flex-row items-center gap-2 mb-3">
+                    <i data-lucide="globe" class="w-4 h-4 text-surface-400 flex-shrink-0"></i>
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Web Scraping</p>
+                </div>
+                <div class="space-y-2">
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">scrape_webpage</code>
+                        <p class="text-sm text-surface-300">Extract title + clean text from any URL — full browser mimicking, auth support</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System -->
+            <div>
+                <div class="flex flex-row items-center gap-2 mb-3">
+                    <i data-lucide="activity" class="w-4 h-4 text-surface-400 flex-shrink-0"></i>
+                    <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">System & Health</p>
+                </div>
+                <div class="space-y-2">
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">get_system_health</code>
+                        <p class="text-sm text-surface-300">Health status of all services — CPU, memory, disk, uptime, API connectivity</p>
+                    </div>
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <code class="text-sm font-mono text-brand-400 whitespace-nowrap flex-shrink-0">get_smart_updater_status</code>
+                        <p class="text-sm text-surface-300">Status of the background economic event updater</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Example Conversations -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="message-circle" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Example Prompts</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300 leading-relaxed">Once connected, you can use natural language to interact with your trading account. Here are some examples:</p>
+
+            <div class="space-y-3">
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                    <div class="flex flex-row items-center gap-2 mb-2">
+                        <i data-lucide="trending-up" class="w-4 h-4 text-green-400 flex-shrink-0"></i>
+                        <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Trading</p>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-sm text-surface-200 font-mono">"Buy 0.01 lots of EURUSD with a 50 pip stop loss and 100 pip take profit"</p>
+                        <p class="text-sm text-surface-200 font-mono">"Close all losing positions on my account"</p>
+                        <p class="text-sm text-surface-200 font-mono">"Set break even on all my open positions"</p>
+                    </div>
+                </div>
+
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                    <div class="flex flex-row items-center gap-2 mb-2">
+                        <i data-lucide="candlestick-chart" class="w-4 h-4 text-blue-400 flex-shrink-0"></i>
+                        <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Analysis</p>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-sm text-surface-200 font-mono">"Show me the EURUSD H4 chart for the last 7 days with 20 and 50 MAs"</p>
+                        <p class="text-sm text-surface-200 font-mono">"What's my current account balance and equity?"</p>
+                        <p class="text-sm text-surface-200 font-mono">"Get the last 50 bars of BTCUSD on the D1 timeframe with support and resistance"</p>
+                    </div>
+                </div>
+
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                    <div class="flex flex-row items-center gap-2 mb-2">
+                        <i data-lucide="newspaper" class="w-4 h-4 text-amber-400 flex-shrink-0"></i>
+                        <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">News & Research</p>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-sm text-surface-200 font-mono">"What high-impact USD news events are coming up this week?"</p>
+                        <p class="text-sm text-surface-200 font-mono">"Scrape the latest Reuters markets page and summarize it"</p>
+                        <p class="text-sm text-surface-200 font-mono">"Show my trade history for today and calculate my win rate"</p>
+                    </div>
+                </div>
+
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                    <div class="flex flex-row items-center gap-2 mb-2">
+                        <i data-lucide="shield" class="w-4 h-4 text-purple-400 flex-shrink-0"></i>
+                        <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Risk Management</p>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-sm text-surface-200 font-mono">"What's my total unrealized P&L across all open positions?"</p>
+                        <p class="text-sm text-surface-200 font-mono">"Move the stop loss on position 12345 to 1.0850"</p>
+                        <p class="text-sm text-surface-200 font-mono">"Show me a chart of GBPUSD with my current short position drawn on it"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Architecture -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="network" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">How It Works</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 py-4">
+                <div class="bg-surface-800 border border-surface-700 rounded-xl px-5 py-4 text-center">
+                    <i data-lucide="message-square" class="w-8 h-8 text-brand-400 mx-auto mb-2"></i>
+                    <p class="text-sm font-semibold text-white">AI Assistant</p>
+                    <p class="text-xs text-surface-400">Claude / Copilot / Cursor</p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <i data-lucide="arrow-right" class="w-6 h-6 text-surface-500 hidden md:block"></i>
+                    <i data-lucide="arrow-down" class="w-6 h-6 text-surface-500 md:hidden"></i>
+                    <p class="text-xs text-surface-500 mt-1">stdio</p>
+                </div>
+                <div class="bg-surface-800 border border-brand-600/30 rounded-xl px-5 py-4 text-center">
+                    <i data-lucide="cpu" class="w-8 h-8 text-brand-400 mx-auto mb-2"></i>
+                    <p class="text-sm font-semibold text-white">MCP Server</p>
+                    <p class="text-xs text-surface-400">mcp_server.py</p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <i data-lucide="arrow-right" class="w-6 h-6 text-surface-500 hidden md:block"></i>
+                    <i data-lucide="arrow-down" class="w-6 h-6 text-surface-500 md:hidden"></i>
+                    <p class="text-xs text-surface-500 mt-1">HTTP</p>
+                </div>
+                <div class="bg-surface-800 border border-surface-700 rounded-xl px-5 py-4 text-center">
+                    <i data-lucide="server" class="w-8 h-8 text-green-400 mx-auto mb-2"></i>
+                    <p class="text-sm font-semibold text-white">{{ app_name }} API</p>
+                    <p class="text-xs text-surface-400">{{ site_url }}</p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <i data-lucide="arrow-right" class="w-6 h-6 text-surface-500 hidden md:block"></i>
+                    <i data-lucide="arrow-down" class="w-6 h-6 text-surface-500 md:hidden"></i>
+                    <p class="text-xs text-surface-500 mt-1">HTTPS</p>
+                </div>
+                <div class="bg-surface-800 border border-surface-700 rounded-xl px-5 py-4 text-center">
+                    <i data-lucide="landmark" class="w-8 h-8 text-amber-400 mx-auto mb-2"></i>
+                    <p class="text-sm font-semibold text-white">TradeLocker</p>
+                    <p class="text-xs text-surface-400">Brokerage</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Locations -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="folder-open" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">File Locations</h3>
+        </div>
+        <div class="p-6">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                            <th class="text-left py-3 px-4 font-semibold">File</th>
+                            <th class="text-left py-3 px-4 font-semibold">Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-800">
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">mcp_server.py</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">The MCP server — run with <span class="font-mono text-surface-200">python mcp_server.py</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">mcp_config.json</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Ready-to-use configuration — copy into your client's config file</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">requirements.txt</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Python dependencies — includes <span class="font-mono text-surface-200">mcp[cli]</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Troubleshooting -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="bug" class="w-5 h-5 text-red-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Troubleshooting</h3>
+        </div>
+        <div class="p-6 space-y-3">
+            <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                <p class="text-sm font-semibold text-white mb-1">"Cannot connect to Arrissa API"</p>
+                <p class="text-sm text-surface-300">Make sure the Flask server is running: <span class="font-mono text-brand-400">cd python-project && python main.py</span></p>
+            </div>
+            <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                <p class="text-sm font-semibold text-white mb-1">"ModuleNotFoundError: No module named 'mcp'"</p>
+                <p class="text-sm text-surface-300">Install the MCP SDK: <span class="font-mono text-brand-400">pip install "mcp[cli]"</span></p>
+            </div>
+            <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                <p class="text-sm font-semibold text-white mb-1">Tools don't appear in Claude Desktop</p>
+                <p class="text-sm text-surface-300">
+                    1. Verify the config JSON is valid (no trailing commas)<br>
+                    2. Ensure the Python path points to your <strong class="text-white">virtual environment's</strong> Python, not the system Python<br>
+                    3. Fully quit and reopen Claude Desktop (not just close the window)
+                </p>
+            </div>
+            <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                <p class="text-sm font-semibold text-white mb-1">"Unauthorized — invalid API key"</p>
+                <p class="text-sm text-surface-300">Use the API key from your <a href="/settings" class="text-brand-400 hover:text-brand-300 underline">Settings</a> page, not the system API key</p>
+            </div>
+            <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                <p class="text-sm font-semibold text-white mb-1">Test the server manually</p>
+                <p class="text-sm text-surface-300">Run this in your terminal to verify the server starts correctly:</p>
+                <pre class="bg-surface-900 border border-surface-700 rounded-lg p-3 mt-2 text-sm font-mono overflow-x-auto text-surface-200">echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"0.1"}}}' | python mcp_server.py</pre>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function copyConfig(elementId) {
+    const el = document.getElementById(elementId);
+    const text = el.innerText || el.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = el.parentElement.querySelector('button span');
+        if (btn) { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 2000); }
+    });
+}
+</script>
+
+{% endblock %}

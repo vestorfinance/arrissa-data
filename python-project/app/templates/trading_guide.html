@@ -1,0 +1,1157 @@
+{% extends "layout.html" %}
+{% block title %}Trading API — {{ app_name }}{% endblock %}
+{% block page_title %}Trading API{% endblock %}
+{% block content %}
+
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Introduction -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="zap" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Overview</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300 leading-relaxed">
+                The {{ app_name }} Trading API lets you <strong class="text-white">open</strong>,
+                <strong class="text-white">close</strong>, and <strong class="text-white">modify</strong> trades
+                on your TradeLocker account using simple query parameters. It also supports
+                <strong class="text-white">trade history</strong> and <strong class="text-white">profit tracking</strong>.
+            </p>
+            <div class="flex flex-row items-start gap-3 bg-surface-800/50 border border-surface-700 rounded-xl p-4">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5"></i>
+                <p class="text-sm text-surface-300">
+                    <strong class="text-white">Warning:</strong> These endpoints place <strong class="text-white">real trades</strong> on your account.
+                    Use a demo account when testing. The "Try it" buttons below will execute live requests.
+                </p>
+            </div>
+            <div class="flex flex-row items-start gap-3 bg-surface-800/50 border border-surface-700 rounded-xl p-4">
+                <i data-lucide="info" class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                <p class="text-sm text-surface-300">
+                    Find your API key on the <a href="/settings" class="text-brand-400 hover:text-brand-300 underline">Settings</a> page.
+                    Your Arrissa Account IDs are shown on the <a href="/dashboard" class="text-brand-400 hover:text-brand-300 underline">Dashboard</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Endpoint -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center justify-between">
+            <div class="flex flex-row items-center gap-3">
+                <span class="text-xs font-bold uppercase tracking-wider bg-green-900/40 text-green-400 border border-green-800 px-2.5 py-1 rounded-lg">GET</span>
+                <h3 class="text-base font-semibold text-white font-mono">/api/trade</h3>
+            </div>
+            <span class="text-xs text-surface-400 font-medium">All Trading Actions</span>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300 leading-relaxed">
+                All actions use a single endpoint. The <span class="font-mono text-brand-400">action</span> parameter determines what happens.
+                Results are returned under a wrapper key like <span class="font-mono text-brand-400">arrissa_data_SERVER_env</span>.
+            </p>
+            <!-- Required Params -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Required Parameters (all actions)</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                                <th class="text-left py-3 px-4 font-semibold">Name</th>
+                                <th class="text-left py-3 px-4 font-semibold">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-800">
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">api_key</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Your API key (or header <span class="font-mono text-surface-200">X-API-Key</span>)</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-mono text-sm text-brand-400">arrissa_account_id</td>
+                                <td class="py-3 px-4 text-sm text-surface-300">Your 6-character account ID</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- MARKET ORDERS -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="trending-up" class="w-5 h-5 text-green-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Market Orders (BUY / SELL)</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300">Open positions at market price. Optional <span class="font-mono text-brand-400">sl</span> and <span class="font-mono text-brand-400">tp</span> for stop loss / take profit.</p>
+
+            <!-- Params -->
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                            <th class="text-left py-3 px-4 font-semibold">Param</th>
+                            <th class="text-left py-3 px-4 font-semibold">Required</th>
+                            <th class="text-left py-3 px-4 font-semibold">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-800">
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">action</td>
+                            <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 font-semibold">Yes</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">BUY or SELL</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">symbol</td>
+                            <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 font-semibold">Yes</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Instrument symbol (e.g. EURUSD, BTCUSD)</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">volume</td>
+                            <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 font-semibold">Yes</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Position size in lots (e.g. 0.01)</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">sl</td>
+                            <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-surface-300 font-semibold">Optional</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Stop loss price</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">tp</td>
+                            <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-surface-300 font-semibold">Optional</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Take profit price</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Examples -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Examples</p>
+                <div class="space-y-3">
+
+                    <!-- BUY EURUSD -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">BUY EURUSD — 0.01 Lot</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=BUY&symbol=EURUSD&volume=0.01"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-green-400">BUY</span>&symbol=<span class="text-amber-400">EURUSD</span>&volume=<span class="text-blue-400">0.01</span>
+                        </a>
+                    </div>
+
+                    <!-- BUY with SL & TP -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">BUY with SL & TP</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=BUY&symbol=EURUSD&volume=0.01&sl=1.0800&tp=1.1000"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-green-400">BUY</span>&symbol=<span class="text-amber-400">EURUSD</span>&volume=<span class="text-blue-400">0.01</span>&sl=<span class="text-red-400">1.0800</span>&tp=<span class="text-green-400">1.1000</span>
+                        </a>
+                    </div>
+
+                    <!-- SELL GBPUSD -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">SELL GBPUSD — 0.02 Lot</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=SELL&symbol=GBPUSD&volume=0.02"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-red-400">SELL</span>&symbol=<span class="text-amber-400">GBPUSD</span>&volume=<span class="text-blue-400">0.02</span>
+                        </a>
+                    </div>
+
+                    <!-- SELL with SL & TP -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">SELL with Protection (SL & TP)</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=SELL&symbol=GBPUSD&volume=0.01&sl=1.2800&tp=1.2600"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-red-400">SELL</span>&symbol=<span class="text-amber-400">GBPUSD</span>&volume=<span class="text-blue-400">0.01</span>&sl=<span class="text-red-400">1.2800</span>&tp=<span class="text-green-400">1.2600</span>
+                        </a>
+                    </div>
+
+                    <!-- BUY USDJPY -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">BUY USDJPY — 0.05 Lot (larger position)</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=BUY&symbol=USDJPY&volume=0.05"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-green-400">BUY</span>&symbol=<span class="text-amber-400">USDJPY</span>&volume=<span class="text-blue-400">0.05</span>
+                        </a>
+                    </div>
+
+                    <!-- BUY BTCUSD -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">BUY BTCUSD — Crypto</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=BUY&symbol=BTCUSD&volume=0.01"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-green-400">BUY</span>&symbol=<span class="text-amber-400">BTCUSD</span>&volume=<span class="text-blue-400">0.01</span>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- PENDING ORDERS -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="clock" class="w-5 h-5 text-amber-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Pending Orders (LIMIT / STOP)</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300">Place limit and stop orders at specific prices. Requires the <span class="font-mono text-brand-400">price</span> parameter.</p>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                            <th class="text-left py-3 px-4 font-semibold">Param</th>
+                            <th class="text-left py-3 px-4 font-semibold">Required</th>
+                            <th class="text-left py-3 px-4 font-semibold">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-800">
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">action</td>
+                            <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 font-semibold">Yes</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">BUY_LIMIT, SELL_LIMIT, BUY_STOP, or SELL_STOP</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">price</td>
+                            <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 font-semibold">Yes</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Entry price for the pending order</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">symbol, volume</td>
+                            <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 font-semibold">Yes</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Same as market orders</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">sl, tp</td>
+                            <td class="py-3 px-4"><span class="text-xs px-2 py-0.5 rounded-full bg-surface-700 text-surface-300 font-semibold">Optional</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Stop loss / Take profit prices</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Examples</p>
+                <div class="space-y-3">
+
+                    <!-- BUY LIMIT -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">BUY LIMIT — Below Market</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=BUY_LIMIT&symbol=EURUSD&volume=0.01&price=1.0850"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-green-400">BUY_LIMIT</span>&symbol=<span class="text-amber-400">EURUSD</span>&volume=<span class="text-blue-400">0.01</span>&price=<span class="text-purple-400">1.0850</span>
+                        </a>
+                    </div>
+
+                    <!-- BUY LIMIT with SL/TP -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">BUY LIMIT with SL & TP</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=BUY_LIMIT&symbol=EURUSD&volume=0.01&price=1.0850&sl=1.0800&tp=1.0950"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-green-400">BUY_LIMIT</span>&symbol=<span class="text-amber-400">EURUSD</span>&volume=<span class="text-blue-400">0.01</span>&price=<span class="text-purple-400">1.0850</span>&sl=<span class="text-red-400">1.0800</span>&tp=<span class="text-green-400">1.0950</span>
+                        </a>
+                    </div>
+
+                    <!-- SELL LIMIT -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">SELL LIMIT — Above Market</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=SELL_LIMIT&symbol=EURUSD&volume=0.01&price=1.1050"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-red-400">SELL_LIMIT</span>&symbol=<span class="text-amber-400">EURUSD</span>&volume=<span class="text-blue-400">0.01</span>&price=<span class="text-purple-400">1.1050</span>
+                        </a>
+                    </div>
+
+                    <!-- BUY STOP -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">BUY STOP — Breakout Buy</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=BUY_STOP&symbol=GBPUSD&volume=0.01&price=1.2750"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-green-400">BUY_STOP</span>&symbol=<span class="text-amber-400">GBPUSD</span>&volume=<span class="text-blue-400">0.01</span>&price=<span class="text-purple-400">1.2750</span>
+                        </a>
+                    </div>
+
+                    <!-- SELL STOP -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">SELL STOP — Breakdown Sell</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=SELL_STOP&symbol=GBPUSD&volume=0.01&price=1.2650"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-red-400">SELL_STOP</span>&symbol=<span class="text-amber-400">GBPUSD</span>&volume=<span class="text-blue-400">0.01</span>&price=<span class="text-purple-400">1.2650</span>
+                        </a>
+                    </div>
+
+                    <!-- Grid BUY LIMIT -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Multi-level BUY LIMIT (grid trading)</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=BUY_LIMIT&symbol=USDJPY&volume=0.01&price=148.50"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-green-400">BUY_LIMIT</span>&symbol=<span class="text-amber-400">USDJPY</span>&volume=<span class="text-blue-400">0.01</span>&price=<span class="text-purple-400">148.50</span>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- POSITION MANAGEMENT -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="x-circle" class="w-5 h-5 text-red-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Position Management</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300">Close positions individually by ticket, close all, or selectively close winners/losers.</p>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                            <th class="text-left py-3 px-4 font-semibold">Action</th>
+                            <th class="text-left py-3 px-4 font-semibold">Params</th>
+                            <th class="text-left py-3 px-4 font-semibold">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-800">
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">CLOSE</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">ticket <em>or</em> symbol</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Close specific position or all positions for a symbol</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">CLOSE_ALL</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">symbol=ALL (optional)</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Close all open positions</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">CLOSE_LOSS</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">symbol=ALL (optional)</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Close all losing positions</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">CLOSE_PROFIT</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">symbol=ALL (optional)</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Close all profitable positions</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Examples</p>
+                <div class="space-y-3">
+
+                    <!-- Close by ticket -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Close by Ticket</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=CLOSE&ticket=123456"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-red-400">CLOSE</span>&ticket=<span class="text-amber-400">123456</span>
+                        </a>
+                    </div>
+
+                    <!-- Close all -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Close All Positions</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=CLOSE_ALL&symbol=ALL"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-red-400">CLOSE_ALL</span>&symbol=<span class="text-amber-400">ALL</span>
+                        </a>
+                    </div>
+
+                    <!-- Close by symbol -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Close All EURUSD Positions</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=CLOSE&symbol=EURUSD"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-red-400">CLOSE</span>&symbol=<span class="text-amber-400">EURUSD</span>
+                        </a>
+                    </div>
+
+                    <!-- Close losses -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Close Only Losses</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=CLOSE_LOSS&symbol=ALL"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-red-400">CLOSE_LOSS</span>&symbol=<span class="text-amber-400">ALL</span>
+                        </a>
+                    </div>
+
+                    <!-- Close profits -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Close Only Profits</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=CLOSE_PROFIT&symbol=ALL"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-green-400">CLOSE_PROFIT</span>&symbol=<span class="text-amber-400">ALL</span>
+                        </a>
+                    </div>
+
+                    <!-- Close losses GBPUSD only -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Close GBPUSD Losses Only</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=CLOSE_LOSS&symbol=GBPUSD"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-red-400">CLOSE_LOSS</span>&symbol=<span class="text-amber-400">GBPUSD</span>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- POSITION MODIFICATION (SL/TP) -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="edit" class="w-5 h-5 text-blue-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Position Modification (SL / TP)</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300">Modify stop loss, take profit, move to break even, or set trailing stops on open positions.</p>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                            <th class="text-left py-3 px-4 font-semibold">Action</th>
+                            <th class="text-left py-3 px-4 font-semibold">Params</th>
+                            <th class="text-left py-3 px-4 font-semibold">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-800">
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">MODIFY_TP</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">ticket, new_value</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Set new take profit price</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">MODIFY_SL</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">ticket, new_value</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Set new stop loss price</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">BREAK_EVEN</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">ticket</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Set SL to entry price</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">BREAK_EVEN_ALL</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">symbol=ALL (optional)</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Move all positions to break even</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">TRAIL_SL</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">ticket, new_value</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Set trailing stop (points offset)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Examples</p>
+                <div class="space-y-3">
+
+                    <!-- MODIFY TP -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Modify Take Profit</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=MODIFY_TP&ticket=123456&new_value=1.1000"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-blue-400">MODIFY_TP</span>&ticket=<span class="text-amber-400">123456</span>&new_value=<span class="text-green-400">1.1000</span>
+                        </a>
+                    </div>
+
+                    <!-- MODIFY SL -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Modify Stop Loss</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=MODIFY_SL&ticket=123456&new_value=1.0850"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-blue-400">MODIFY_SL</span>&ticket=<span class="text-amber-400">123456</span>&new_value=<span class="text-red-400">1.0850</span>
+                        </a>
+                    </div>
+
+                    <!-- BREAK EVEN -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Move to Break Even</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=BREAK_EVEN&ticket=123456"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-blue-400">BREAK_EVEN</span>&ticket=<span class="text-amber-400">123456</span>
+                        </a>
+                    </div>
+
+                    <!-- BREAK EVEN ALL -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Break Even All Positions</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=BREAK_EVEN_ALL&symbol=ALL"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-blue-400">BREAK_EVEN_ALL</span>&symbol=<span class="text-amber-400">ALL</span>
+                        </a>
+                    </div>
+
+                    <!-- TRAIL SL 50 -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Trail Stop Loss — 50 points</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=TRAIL_SL&ticket=123456&new_value=50"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-blue-400">TRAIL_SL</span>&ticket=<span class="text-amber-400">123456</span>&new_value=<span class="text-purple-400">50</span>
+                        </a>
+                    </div>
+
+                    <!-- TRAIL SL 100 -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Trail Stop Loss — 100 points (wider)</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=TRAIL_SL&ticket=123456&new_value=100"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-blue-400">TRAIL_SL</span>&ticket=<span class="text-amber-400">123456</span>&new_value=<span class="text-purple-400">100</span>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- PENDING ORDER MANAGEMENT -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="trash-2" class="w-5 h-5 text-orange-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Pending Order Management</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300">Delete or modify pending (unfilled) limit and stop orders.</p>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                            <th class="text-left py-3 px-4 font-semibold">Action</th>
+                            <th class="text-left py-3 px-4 font-semibold">Params</th>
+                            <th class="text-left py-3 px-4 font-semibold">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-800">
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">DELETE_ORDER</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">ticket</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Delete specific pending order</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">DELETE_ALL_ORDERS</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">symbol=ALL (optional)</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Delete all pending orders</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-sm text-brand-400">MODIFY_ORDER</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">ticket, new_value</td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Change pending order price</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Examples</p>
+                <div class="space-y-3">
+
+                    <!-- DELETE ORDER -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Delete Order by Ticket</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=DELETE_ORDER&ticket=123456"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-orange-400">DELETE_ORDER</span>&ticket=<span class="text-amber-400">123456</span>
+                        </a>
+                    </div>
+
+                    <!-- DELETE ALL ORDERS -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Delete All Pending Orders</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=DELETE_ALL_ORDERS&symbol=ALL"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-orange-400">DELETE_ALL_ORDERS</span>&symbol=<span class="text-amber-400">ALL</span>
+                        </a>
+                    </div>
+
+                    <!-- DELETE EURUSD ORDERS -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Delete EURUSD Orders Only</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=DELETE_ALL_ORDERS&symbol=EURUSD"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-orange-400">DELETE_ALL_ORDERS</span>&symbol=<span class="text-amber-400">EURUSD</span>
+                        </a>
+                    </div>
+
+                    <!-- MODIFY ORDER PRICE -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Modify Order Price</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=MODIFY_ORDER&ticket=123456&new_value=1.0900"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-blue-400">MODIFY_ORDER</span>&ticket=<span class="text-amber-400">123456</span>&new_value=<span class="text-purple-400">1.0900</span>
+                        </a>
+                    </div>
+
+                    <!-- MODIFY ORDER SL -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Modify Pending Order SL</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=MODIFY_SL&ticket=123456&new_value=1.0850"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-blue-400">MODIFY_SL</span>&ticket=<span class="text-amber-400">123456</span>&new_value=<span class="text-red-400">1.0850</span>
+                        </a>
+                    </div>
+
+                    <!-- MODIFY ORDER TP -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Modify Pending Order TP</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&action=MODIFY_TP&ticket=123456&new_value=1.1000"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?action=<span class="text-blue-400">MODIFY_TP</span>&ticket=<span class="text-amber-400">123456</span>&new_value=<span class="text-green-400">1.1000</span>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- TRADE HISTORY -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="history" class="w-5 h-5 text-cyan-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Trade History Queries</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300">Retrieve closed trade history. Use the <span class="font-mono text-brand-400">history</span> parameter instead of <span class="font-mono text-brand-400">action</span>.</p>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                            <th class="text-left py-3 px-4 font-semibold">Value</th>
+                            <th class="text-left py-3 px-4 font-semibold">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-800">
+                        <tr><td class="py-3 px-4 font-mono text-sm text-brand-400">today</td><td class="py-3 px-4 text-sm text-surface-300">All trades closed today</td></tr>
+                        <tr><td class="py-3 px-4 font-mono text-sm text-brand-400">last-hour</td><td class="py-3 px-4 text-sm text-surface-300">Trades in last 60 minutes</td></tr>
+                        <tr><td class="py-3 px-4 font-mono text-sm text-brand-400">last-10</td><td class="py-3 px-4 text-sm text-surface-300">Most recent 10 trades</td></tr>
+                        <tr><td class="py-3 px-4 font-mono text-sm text-brand-400">last-20</td><td class="py-3 px-4 text-sm text-surface-300">Most recent 20 trades</td></tr>
+                        <tr><td class="py-3 px-4 font-mono text-sm text-brand-400">last-7days</td><td class="py-3 px-4 text-sm text-surface-300">Weekly trade history</td></tr>
+                        <tr><td class="py-3 px-4 font-mono text-sm text-brand-400">last-30days</td><td class="py-3 px-4 text-sm text-surface-300">Monthly trade history</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Examples</p>
+                <div class="space-y-3">
+
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Today's History</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&history=today"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?history=<span class="text-cyan-400">today</span>
+                        </a>
+                    </div>
+
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Last Hour Trades</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&history=last-hour"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?history=<span class="text-cyan-400">last-hour</span>
+                        </a>
+                    </div>
+
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Last 10 Trades</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&history=last-10"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?history=<span class="text-cyan-400">last-10</span>
+                        </a>
+                    </div>
+
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Last 20 Trades</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&history=last-20"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?history=<span class="text-cyan-400">last-20</span>
+                        </a>
+                    </div>
+
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Last 7 Days</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&history=last-7days"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?history=<span class="text-cyan-400">last-7days</span>
+                        </a>
+                    </div>
+
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Last 30 Days</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&history=last-30days"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?history=<span class="text-cyan-400">last-30days</span>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- PROFIT/LOSS TRACKING -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="dollar-sign" class="w-5 h-5 text-emerald-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Profit / Loss Tracking</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300">Track profit and loss. Use the <span class="font-mono text-brand-400">profit</span> parameter instead of <span class="font-mono text-brand-400">action</span>.</p>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                            <th class="text-left py-3 px-4 font-semibold">Value</th>
+                            <th class="text-left py-3 px-4 font-semibold">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-800">
+                        <tr><td class="py-3 px-4 font-mono text-sm text-brand-400">today</td><td class="py-3 px-4 text-sm text-surface-300">Total P/L for today</td></tr>
+                        <tr><td class="py-3 px-4 font-mono text-sm text-brand-400">last-hour</td><td class="py-3 px-4 text-sm text-surface-300">P/L in last 60 minutes</td></tr>
+                        <tr><td class="py-3 px-4 font-mono text-sm text-brand-400">this-week</td><td class="py-3 px-4 text-sm text-surface-300">Weekly profit/loss</td></tr>
+                        <tr><td class="py-3 px-4 font-mono text-sm text-brand-400">this-month</td><td class="py-3 px-4 text-sm text-surface-300">Monthly profit/loss</td></tr>
+                        <tr><td class="py-3 px-4 font-mono text-sm text-brand-400">last-7days</td><td class="py-3 px-4 text-sm text-surface-300">Rolling 7-day P/L</td></tr>
+                        <tr><td class="py-3 px-4 font-mono text-sm text-brand-400">last-30days</td><td class="py-3 px-4 text-sm text-surface-300">Rolling 30-day P/L</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Examples</p>
+                <div class="space-y-3">
+
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Today's Profit</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&profit=today"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?profit=<span class="text-emerald-400">today</span>
+                        </a>
+                    </div>
+
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Last Hour Profit</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&profit=last-hour"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?profit=<span class="text-emerald-400">last-hour</span>
+                        </a>
+                    </div>
+
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">This Week Profit</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&profit=this-week"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?profit=<span class="text-emerald-400">this-week</span>
+                        </a>
+                    </div>
+
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">This Month Profit</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&profit=this-month"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?profit=<span class="text-emerald-400">this-month</span>
+                        </a>
+                    </div>
+
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Last 7 Days Profit</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&profit=last-7days"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?profit=<span class="text-emerald-400">last-7days</span>
+                        </a>
+                    </div>
+
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                        <div class="flex flex-row items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-surface-400">Last 30 Days Profit</p>
+                            <button onclick="tryTrade(this)" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i><span>Try it</span>
+                            </button>
+                        </div>
+                        <a href="/api/trade?api_key={{ api_key }}&arrissa_account_id={{ example_account_id }}&profit=last-30days"
+                           target="_blank" class="block font-mono text-sm text-surface-200 hover:text-brand-400 transition break-all">
+                            /api/trade?profit=<span class="text-emerald-400">last-30days</span>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- RESPONSE EXAMPLE -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="code" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Response Examples</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Market Order Response</p>
+            <pre class="bg-surface-800 border border-surface-700 rounded-xl p-4 text-sm font-mono overflow-x-auto"><code class="language-json">{
+  "arrissa_data_HEROFX_demo": {
+    "action": "BUY",
+    "symbol": "EURUSD",
+    "volume": 0.01,
+    "sl": null,
+    "tp": null,
+    "price": "market",
+    "status": "ok",
+    "order_id": "7277816997907787135"
+  }
+}</code></pre>
+
+            <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3 mt-6">Close Losses Response</p>
+            <pre class="bg-surface-800 border border-surface-700 rounded-xl p-4 text-sm font-mono overflow-x-auto"><code class="language-json">{
+  "arrissa_data_HEROFX_demo": {
+    "action": "CLOSE_LOSS",
+    "symbol": "ALL",
+    "closed_count": 2,
+    "details": [
+      {"position_id": "123456", "pl": -15.30, "result": "ok"},
+      {"position_id": "789012", "pl": -8.50, "result": "ok"}
+    ],
+    "status": "ok"
+  }
+}</code></pre>
+
+            <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3 mt-6">History Response</p>
+            <pre class="bg-surface-800 border border-surface-700 rounded-xl p-4 text-sm font-mono overflow-x-auto"><code class="language-json">{
+  "arrissa_data_HEROFX_demo": {
+    "arrissa_account_id": "F76161",
+    "query": "history=last-10",
+    "count": 10,
+    "trades": [
+      {
+        "id": "7277...",
+        "side": "buy",
+        "type": "market",
+        "status": "Filled",
+        "qty": "10.00",
+        "avgPrice": "90263",
+        "...": "..."
+      }
+    ]
+  }
+}</code></pre>
+        </div>
+    </div>
+
+    <!-- Error Responses -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Error Responses</h3>
+        </div>
+        <div class="p-6">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                            <th class="text-left py-3 px-4 font-semibold">Code</th>
+                            <th class="text-left py-3 px-4 font-semibold">Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-800">
+                        <tr>
+                            <td class="py-3 px-4"><span class="text-xs font-mono px-2.5 py-1 rounded-lg bg-red-900/40 text-red-400 font-semibold">400</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Missing or invalid parameters (symbol, volume, price, ticket, etc.)</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4"><span class="text-xs font-mono px-2.5 py-1 rounded-lg bg-red-900/40 text-red-400 font-semibold">401</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Missing or invalid API key</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4"><span class="text-xs font-mono px-2.5 py-1 rounded-lg bg-amber-900/40 text-amber-400 font-semibold">404</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Account, symbol, or position not found</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4"><span class="text-xs font-mono px-2.5 py-1 rounded-lg bg-amber-900/40 text-amber-400 font-semibold">502</span></td>
+                            <td class="py-3 px-4 text-sm text-surface-300">Failed to reach TradeLocker — token may be expired</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Actions Reference -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="list" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">All Actions Reference</h3>
+        </div>
+        <div class="p-6">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800">
+                            <th class="text-left py-3 px-4 font-semibold">Action</th>
+                            <th class="text-left py-3 px-4 font-semibold">Required Params</th>
+                            <th class="text-left py-3 px-4 font-semibold">Optional</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-800 text-sm">
+                        <tr><td class="py-2 px-4 font-mono text-green-400">BUY</td><td class="py-2 px-4 text-surface-300">symbol, volume</td><td class="py-2 px-4 text-surface-400">sl, tp</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-red-400">SELL</td><td class="py-2 px-4 text-surface-300">symbol, volume</td><td class="py-2 px-4 text-surface-400">sl, tp</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-green-400">BUY_LIMIT</td><td class="py-2 px-4 text-surface-300">symbol, volume, price</td><td class="py-2 px-4 text-surface-400">sl, tp</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-red-400">SELL_LIMIT</td><td class="py-2 px-4 text-surface-300">symbol, volume, price</td><td class="py-2 px-4 text-surface-400">sl, tp</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-green-400">BUY_STOP</td><td class="py-2 px-4 text-surface-300">symbol, volume, price</td><td class="py-2 px-4 text-surface-400">sl, tp</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-red-400">SELL_STOP</td><td class="py-2 px-4 text-surface-300">symbol, volume, price</td><td class="py-2 px-4 text-surface-400">sl, tp</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-red-400">CLOSE</td><td class="py-2 px-4 text-surface-300">ticket <em>or</em> symbol</td><td class="py-2 px-4 text-surface-400">—</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-red-400">CLOSE_ALL</td><td class="py-2 px-4 text-surface-300">—</td><td class="py-2 px-4 text-surface-400">symbol</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-red-400">CLOSE_LOSS</td><td class="py-2 px-4 text-surface-300">—</td><td class="py-2 px-4 text-surface-400">symbol</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-green-400">CLOSE_PROFIT</td><td class="py-2 px-4 text-surface-300">—</td><td class="py-2 px-4 text-surface-400">symbol</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-blue-400">MODIFY_TP</td><td class="py-2 px-4 text-surface-300">ticket, new_value</td><td class="py-2 px-4 text-surface-400">—</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-blue-400">MODIFY_SL</td><td class="py-2 px-4 text-surface-300">ticket, new_value</td><td class="py-2 px-4 text-surface-400">—</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-blue-400">BREAK_EVEN</td><td class="py-2 px-4 text-surface-300">ticket</td><td class="py-2 px-4 text-surface-400">—</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-blue-400">BREAK_EVEN_ALL</td><td class="py-2 px-4 text-surface-300">—</td><td class="py-2 px-4 text-surface-400">symbol</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-blue-400">TRAIL_SL</td><td class="py-2 px-4 text-surface-300">ticket, new_value</td><td class="py-2 px-4 text-surface-400">—</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-orange-400">DELETE_ORDER</td><td class="py-2 px-4 text-surface-300">ticket</td><td class="py-2 px-4 text-surface-400">—</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-orange-400">DELETE_ALL_ORDERS</td><td class="py-2 px-4 text-surface-300">—</td><td class="py-2 px-4 text-surface-400">symbol</td></tr>
+                        <tr><td class="py-2 px-4 font-mono text-blue-400">MODIFY_ORDER</td><td class="py-2 px-4 text-surface-300">ticket, new_value</td><td class="py-2 px-4 text-surface-400">—</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function tryTrade(btn) {
+    const link = btn.closest('.bg-surface-800').querySelector('a');
+    if (link) window.open(link.href, '_blank');
+}
+</script>
+
+{% endblock %}

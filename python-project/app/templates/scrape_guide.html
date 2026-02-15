@@ -1,0 +1,257 @@
+{% extends "layout.html" %}
+{% block title %}Scrape API — {{ app_name }}{% endblock %}
+{% block page_title %}Scrape API{% endblock %}
+{% block content %}
+
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Introduction -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="book-open" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Overview</h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-sm text-surface-300 leading-relaxed">
+                The {{ app_name }} Scrape API fetches and cleans the text content of any web page. It strips
+                scripts, styles, navigation, headers, footers, and other noise — returning only meaningful text.
+                Supports optional authentication (Basic Auth, Bearer Token, Session Cookie, Custom Headers).
+            </p>
+            <div class="flex flex-row items-start gap-3 bg-surface-800/50 border border-surface-700 rounded-xl p-4">
+                <i data-lucide="info" class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                <p class="text-sm text-surface-300">
+                    Find your API key on the <a href="/settings" class="text-brand-400 hover:text-brand-300 underline">Settings</a> page.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="shield-check" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Authentication</h3>
+        </div>
+        <div class="p-6">
+            <p class="text-sm text-surface-300 leading-relaxed">
+                Pass your API key as the <code class="text-brand-400">api_key</code> query parameter in every request.
+            </p>
+        </div>
+    </div>
+
+    <!-- Endpoint -->
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
+            <i data-lucide="radio" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+            <h3 class="text-base font-semibold text-white">Endpoint</h3>
+        </div>
+        <div class="p-6 space-y-6">
+            <div class="bg-surface-800 border border-surface-700 rounded-xl p-4">
+                <code class="text-sm text-brand-400">GET /api/scrape?api_key=YOUR_KEY&amp;url=TARGET_URL</code>
+            </div>
+
+            <!-- Parameters -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Parameters</p>
+                <div class="overflow-hidden rounded-xl border border-surface-700">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="bg-surface-800 text-surface-300">
+                                <th class="text-left py-3 px-4 font-semibold">Name</th>
+                                <th class="text-left py-3 px-4 font-semibold">In</th>
+                                <th class="text-left py-3 px-4 font-semibold">Required</th>
+                                <th class="text-left py-3 px-4 font-semibold">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-surface-300">
+                            <tr class="border-b border-surface-800/50">
+                                <td class="py-3 px-4 font-mono text-brand-400">api_key</td>
+                                <td class="py-3 px-4">query</td>
+                                <td class="py-3 px-4"><span class="text-red-400 text-xs font-semibold">required</span></td>
+                                <td class="py-3 px-4">Your API key</td>
+                            </tr>
+                            <tr class="border-b border-surface-800/50">
+                                <td class="py-3 px-4 font-mono text-brand-400">url</td>
+                                <td class="py-3 px-4">query</td>
+                                <td class="py-3 px-4"><span class="text-red-400 text-xs font-semibold">required</span></td>
+                                <td class="py-3 px-4">The full URL to scrape (e.g. <code class="text-brand-400">https://example.com</code>). If the <code class="text-brand-400">http://</code> or <code class="text-brand-400">https://</code> prefix is omitted, <code class="text-brand-400">https://</code> is added automatically.</td>
+                            </tr>
+                            <tr class="border-b border-surface-800/50">
+                                <td class="py-3 px-4 font-mono text-brand-400">auth_user</td>
+                                <td class="py-3 px-4">query</td>
+                                <td class="py-3 px-4"><span class="text-surface-500 text-xs font-semibold">optional</span></td>
+                                <td class="py-3 px-4">Username for HTTP Basic Authentication (use with <code class="text-brand-400">auth_pass</code>)</td>
+                            </tr>
+                            <tr class="border-b border-surface-800/50">
+                                <td class="py-3 px-4 font-mono text-brand-400">auth_pass</td>
+                                <td class="py-3 px-4">query</td>
+                                <td class="py-3 px-4"><span class="text-surface-500 text-xs font-semibold">optional</span></td>
+                                <td class="py-3 px-4">Password for HTTP Basic Authentication</td>
+                            </tr>
+                            <tr class="border-b border-surface-800/50">
+                                <td class="py-3 px-4 font-mono text-brand-400">bearer_token</td>
+                                <td class="py-3 px-4">query</td>
+                                <td class="py-3 px-4"><span class="text-surface-500 text-xs font-semibold">optional</span></td>
+                                <td class="py-3 px-4">Bearer token — sent as <code class="text-brand-400">Authorization: Bearer &lt;token&gt;</code></td>
+                            </tr>
+                            <tr class="border-b border-surface-800/50">
+                                <td class="py-3 px-4 font-mono text-brand-400">session_cookie</td>
+                                <td class="py-3 px-4">query</td>
+                                <td class="py-3 px-4"><span class="text-surface-500 text-xs font-semibold">optional</span></td>
+                                <td class="py-3 px-4">Cookie string, e.g. <code class="text-brand-400">session_id=abc123</code></td>
+                            </tr>
+                            <tr class="border-b border-surface-800/50">
+                                <td class="py-3 px-4 font-mono text-brand-400">custom_headers</td>
+                                <td class="py-3 px-4">query</td>
+                                <td class="py-3 px-4"><span class="text-surface-500 text-xs font-semibold">optional</span></td>
+                                <td class="py-3 px-4">JSON object of extra headers, e.g. <code class="text-brand-400">{"X-Custom":"value"}</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Response -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Response</p>
+                <div class="bg-surface-800 border border-surface-700 rounded-xl p-4 space-y-3">
+                    <p class="text-sm text-surface-300">
+                        Returns a JSON object with:
+                    </p>
+                    <div class="overflow-hidden rounded-xl border border-surface-700">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-surface-800 text-surface-300">
+                                    <th class="text-left py-2 px-4 font-semibold">Field</th>
+                                    <th class="text-left py-2 px-4 font-semibold">Type</th>
+                                    <th class="text-left py-2 px-4 font-semibold">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-surface-300">
+                                <tr class="border-b border-surface-800/50">
+                                    <td class="py-2 px-4 font-mono text-brand-400">url</td>
+                                    <td class="py-2 px-4">string</td>
+                                    <td class="py-2 px-4">The final URL after any redirects</td>
+                                </tr>
+                                <tr class="border-b border-surface-800/50">
+                                    <td class="py-2 px-4 font-mono text-brand-400">status_code</td>
+                                    <td class="py-2 px-4">number</td>
+                                    <td class="py-2 px-4">HTTP status code from the target page</td>
+                                </tr>
+                                <tr class="border-b border-surface-800/50">
+                                    <td class="py-2 px-4 font-mono text-brand-400">title</td>
+                                    <td class="py-2 px-4">string</td>
+                                    <td class="py-2 px-4">The page title extracted from <code class="text-brand-400">&lt;title&gt;</code></td>
+                                </tr>
+                                <tr class="border-b border-surface-800/50">
+                                    <td class="py-2 px-4 font-mono text-brand-400">content</td>
+                                    <td class="py-2 px-4">string</td>
+                                    <td class="py-2 px-4">Cleaned text content extracted from semantic elements (scripts/styles/nav removed)</td>
+                                </tr>
+                                <tr class="border-b border-surface-800/50">
+                                    <td class="py-2 px-4 font-mono text-brand-400">content_length</td>
+                                    <td class="py-2 px-4">number</td>
+                                    <td class="py-2 px-4">Character length of the extracted content</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Examples -->
+            <div>
+                <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Examples</p>
+                <div class="space-y-4">
+
+                    <!-- Example 1: Reuters -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl overflow-hidden">
+                        <div class="px-4 py-2.5 border-b border-surface-700 flex flex-row items-center justify-between">
+                            <div class="flex flex-row items-center gap-2">
+                                <i data-lucide="newspaper" class="w-4 h-4 text-surface-400 flex-shrink-0"></i>
+                                <span class="text-xs font-semibold text-surface-400">Reuters — World Economy</span>
+                            </div>
+                            <a href="/api/scrape?api_key={{ api_key }}&url=https://www.reuters.com/markets/econ-world/" target="_blank" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                <span>Try it</span>
+                            </a>
+                        </div>
+                        <pre class="p-4 overflow-x-auto"><code class="text-sm text-green-400">GET /api/scrape?api_key={{ api_key }}&amp;url=<span class="text-amber-400">https://www.reuters.com/markets/econ-world/</span></code></pre>
+                    </div>
+
+                    <!-- Example 2: Fox News -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl overflow-hidden">
+                        <div class="px-4 py-2.5 border-b border-surface-700 flex flex-row items-center justify-between">
+                            <div class="flex flex-row items-center gap-2">
+                                <i data-lucide="newspaper" class="w-4 h-4 text-surface-400 flex-shrink-0"></i>
+                                <span class="text-xs font-semibold text-surface-400">Fox News — Global Economy</span>
+                            </div>
+                            <a href="/api/scrape?api_key={{ api_key }}&url=https://www.foxnews.com/category/world/global-economy" target="_blank" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                <span>Try it</span>
+                            </a>
+                        </div>
+                        <pre class="p-4 overflow-x-auto"><code class="text-sm text-green-400">GET /api/scrape?api_key={{ api_key }}&amp;url=<span class="text-amber-400">https://www.foxnews.com/category/world/global-economy</span></code></pre>
+                    </div>
+
+                    <!-- Example 3: Brave Search (URL with query params) -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl overflow-hidden">
+                        <div class="px-4 py-2.5 border-b border-surface-700 flex flex-row items-center justify-between">
+                            <div class="flex flex-row items-center gap-2">
+                                <i data-lucide="search" class="w-4 h-4 text-surface-400 flex-shrink-0"></i>
+                                <span class="text-xs font-semibold text-surface-400">Brave Search — geopolitical events</span>
+                            </div>
+                            <a href="/api/scrape?api_key={{ api_key }}&url=https://search.brave.com/search?q=usa geopolitical events today 2026-02-15" target="_blank" class="flex flex-row items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                <span>Try it</span>
+                            </a>
+                        </div>
+                        <pre class="p-4 overflow-x-auto"><code class="text-sm text-green-400">GET /api/scrape?api_key={{ api_key }}&amp;url=<span class="text-amber-400">https://search.brave.com/search?q=usa geopolitical events today 2026-02-15</span></code></pre>
+                    </div>
+
+                    <!-- Example 4: curl -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl overflow-hidden">
+                        <div class="px-4 py-2.5 border-b border-surface-700 flex flex-row items-center gap-2">
+                            <i data-lucide="terminal" class="w-4 h-4 text-surface-400 flex-shrink-0"></i>
+                            <span class="text-xs font-semibold text-surface-400">With curl</span>
+                        </div>
+                        <pre class="p-4 overflow-x-auto"><code class="text-sm text-green-400">curl -s "{{ site_url }}/api/scrape?api_key={{ api_key }}&amp;url=https://www.reuters.com/markets/econ-world/" | python3 -m json.tool</code></pre>
+                    </div>
+
+                    <!-- Example 6: JavaScript fetch -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl overflow-hidden">
+                        <div class="px-4 py-2.5 border-b border-surface-700 flex flex-row items-center gap-2">
+                            <i data-lucide="code" class="w-4 h-4 text-surface-400 flex-shrink-0"></i>
+                            <span class="text-xs font-semibold text-surface-400">JavaScript fetch</span>
+                        </div>
+                        <pre class="p-4 overflow-x-auto"><code class="language-javascript text-sm">const resp = await fetch(
+  `{{ site_url }}/api/scrape?api_key={{ api_key }}&url=${encodeURIComponent("https://www.foxnews.com/category/world/global-economy")}`
+);
+const data = await resp.json();
+console.log(data.content); // cleaned text content</code></pre>
+                    </div>
+
+                    <!-- Example 7: Python requests -->
+                    <div class="bg-surface-800 border border-surface-700 rounded-xl overflow-hidden">
+                        <div class="px-4 py-2.5 border-b border-surface-700 flex flex-row items-center gap-2">
+                            <i data-lucide="code" class="w-4 h-4 text-surface-400 flex-shrink-0"></i>
+                            <span class="text-xs font-semibold text-surface-400">Python requests</span>
+                        </div>
+                        <pre class="p-4 overflow-x-auto"><code class="language-python text-sm">import requests
+
+resp = requests.get("{{ site_url }}/api/scrape", params={
+    "api_key": "{{ api_key }}",
+    "url": "https://search.brave.com/search?q=usa geopolitical events today 2026-02-15",
+})
+data = resp.json()
+print(data["content"])  # cleaned text content</code></pre>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

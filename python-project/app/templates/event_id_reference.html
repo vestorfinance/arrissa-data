@@ -1,0 +1,150 @@
+{% extends "layout.html" %}
+{% block title %}Event ID Reference{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div>
+        <h1 class="text-2xl font-bold text-white">Event ID Reference</h1>
+        <p class="text-sm text-surface-400 mt-1">Browse all known economic event types. Click an ID to copy it, or search and copy filtered IDs in bulk.</p>
+    </div>
+
+    {% if events | length == 0 %}
+    <!-- Empty state -->
+    <div class="bg-surface-900 border border-surface-700 rounded-2xl p-10 text-center">
+        <i data-lucide="database" class="w-10 h-10 text-surface-500 mx-auto mb-3"></i>
+        <p class="text-surface-300 font-medium">No events in the database yet</p>
+        <p class="text-sm text-surface-400 mt-1">Go to the <a href="/news-api" class="text-brand-400 hover:text-brand-300 transition underline">News API</a> page and save some events first.</p>
+    </div>
+    {% else %}
+
+    <!-- Search + Copy All bar -->
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div class="relative flex-1">
+            <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 pointer-events-none"></i>
+            <input id="searchInput" type="text" placeholder="Search by event name, country, currency, or ID..."
+                   class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-800 border border-surface-700 text-sm text-white placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition">
+        </div>
+        <button id="copyAllBtn" onclick="copyFilteredIds()"
+                class="flex flex-row items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold transition whitespace-nowrap">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+            <span>Copy All Filtered IDs</span>
+        </button>
+    </div>
+
+    <!-- Count -->
+    <p id="countLabel" class="text-xs text-surface-400">Showing <span id="visibleCount">{{ events | length }}</span> of {{ events | length }} event types</p>
+
+    <!-- Table -->
+    <div class="bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="text-xs uppercase tracking-widest text-surface-400 border-b border-surface-800 bg-surface-800/50">
+                        <th class="text-left py-3 px-5 font-semibold w-32">Event ID</th>
+                        <th class="text-left py-3 px-5 font-semibold">Event Name</th>
+                        <th class="text-left py-3 px-5 font-semibold w-24">Country</th>
+                        <th class="text-left py-3 px-5 font-semibold w-24">Currency</th>
+                        <th class="text-center py-3 px-5 font-semibold w-20">Copy</th>
+                    </tr>
+                </thead>
+                <tbody id="eventsBody" class="divide-y divide-surface-800">
+                    {% for ev in events %}
+                    <tr class="event-row hover:bg-surface-800/40 transition"
+                        data-id="{{ ev.event_type_id }}"
+                        data-title="{{ ev.title | lower }}"
+                        data-country="{{ ev.country | lower }}"
+                        data-currency="{{ ev.currency | lower }}">
+                        <td class="py-3 px-5">
+                            <span class="font-mono text-sm text-brand-400">{{ ev.event_type_id }}</span>
+                        </td>
+                        <td class="py-3 px-5 text-sm text-surface-200">{{ ev.title }}</td>
+                        <td class="py-3 px-5">
+                            <span class="text-xs font-mono px-2 py-1 rounded-md bg-surface-800 border border-surface-700 text-surface-300">{{ ev.country }}</span>
+                        </td>
+                        <td class="py-3 px-5">
+                            <span class="text-xs font-mono px-2 py-1 rounded-md bg-surface-800 border border-surface-700 text-surface-300">{{ ev.currency }}</span>
+                        </td>
+                        <td class="py-3 px-5 text-center">
+                            <button onclick="copySingleId(this, '{{ ev.event_type_id }}')"
+                                    class="inline-flex items-center gap-1 text-xs text-surface-400 hover:text-brand-400 transition"
+                                    title="Copy {{ ev.event_type_id }}">
+                                <i data-lucide="clipboard-copy" class="w-4 h-4"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% endif %}
+</div>
+
+<script>
+// ── Search / Filter ──────────────────────────────────────────────────────
+const searchInput = document.getElementById('searchInput');
+const eventsBody  = document.getElementById('eventsBody');
+const countLabel  = document.getElementById('visibleCount');
+
+if (searchInput) {
+    searchInput.addEventListener('input', () => {
+        const q = searchInput.value.trim().toLowerCase();
+        const rows = eventsBody.querySelectorAll('.event-row');
+        let visible = 0;
+        rows.forEach(row => {
+            const id       = row.dataset.id.toLowerCase();
+            const title    = row.dataset.title;
+            const country  = row.dataset.country;
+            const currency = row.dataset.currency;
+            const match = !q || id.includes(q) || title.includes(q) || country.includes(q) || currency.includes(q);
+            row.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+        countLabel.textContent = visible;
+    });
+}
+
+// ── Copy single ID ───────────────────────────────────────────────────────
+function copySingleId(btn, id) {
+    navigator.clipboard.writeText(id).then(() => {
+        const icon = btn.querySelector('[data-lucide]');
+        const origClass = icon.getAttribute('data-lucide');
+        icon.setAttribute('data-lucide', 'check');
+        lucide.createIcons();
+        setTimeout(() => {
+            icon.setAttribute('data-lucide', origClass);
+            lucide.createIcons();
+        }, 1200);
+    });
+}
+
+// ── Copy all filtered IDs ────────────────────────────────────────────────
+function copyFilteredIds() {
+    const rows = eventsBody.querySelectorAll('.event-row');
+    const ids = [];
+    rows.forEach(row => {
+        if (row.style.display !== 'none') {
+            ids.push(row.dataset.id);
+        }
+    });
+    if (ids.length === 0) return;
+    navigator.clipboard.writeText(ids.join(',')).then(() => {
+        const btn = document.getElementById('copyAllBtn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i><span>Copied ' + ids.length + ' IDs</span>';
+        btn.classList.remove('bg-brand-600', 'hover:bg-brand-500');
+        btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+        lucide.createIcons();
+        setTimeout(() => {
+            btn.innerHTML = orig;
+            btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
+            btn.classList.add('bg-brand-600', 'hover:bg-brand-500');
+            lucide.createIcons();
+        }, 1500);
+    });
+}
+</script>
+{% endblock %}

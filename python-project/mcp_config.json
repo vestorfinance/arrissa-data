@@ -1,0 +1,14 @@
+{
+  "_comment": "This is a template. For auto-detected paths, visit /mcp-server in the web UI or GET /api/mcp-config",
+  "mcpServers": {
+    "arrissa-trading-api": {
+      "command": "python",
+      "args": [
+        "mcp_server.py"
+      ],
+      "env": {
+        "ARRISSA_API_URL": "http://localhost:5001"
+      }
+    }
+  }
+}
