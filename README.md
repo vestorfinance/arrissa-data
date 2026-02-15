@@ -340,4 +340,4 @@ Created by **Ngonidzashe Jiji** (David Richchild)
 
 ## License
 
-This project is proprietary software by [Vestor Finance](https://github.com/vestorfinance).
+This project is proprietary software by [Arrissa Pty Ltd](https://github.com/vestorfinance).
