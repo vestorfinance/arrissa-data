@@ -459,7 +459,8 @@ _update_cache = {"data": None, "checked_at": None}
 
 def _get_local_commit():
     """Get the current local git commit hash."""
-    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    # app/routes.py -> app/ -> python-project/ -> arrissa-data/ (repo root)
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     try:
         result = subprocess.run(
             ["git", "rev-parse", "HEAD"],
@@ -571,8 +572,9 @@ def check_update():
 @login_required
 def run_update():
     """Pull latest code from GitHub, install deps, and schedule a service restart."""
-    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    project_dir = os.path.join(repo_root, "python-project")
+    # app/routes.py -> app/ -> python-project/ -> arrissa-data/ (repo root)
+    project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    repo_root = os.path.dirname(project_dir)
     venv_pip = os.path.join(project_dir, ".venv", "bin", "pip")
 
     steps = []
