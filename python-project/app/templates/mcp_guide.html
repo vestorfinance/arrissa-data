@@ -24,7 +24,7 @@
                 <p class="text-sm text-surface-300">
                     The MCP server acts as a bridge — it receives requests from your AI assistant and forwards them to the
                     {{ app_name }} Flask API running on <span class="font-mono text-brand-400">{{ site_url }}</span>.
-                    Both services must be running for MCP tools to work.
+                    Connect using the <strong class="text-white">Remote (SSE)</strong> method below — no local Python required.
                 </p>
             </div>
             <div class="flex flex-row items-start gap-3 bg-surface-800/50 border border-surface-700 rounded-xl p-4">
@@ -113,11 +113,104 @@
         </div>
     </div>
 
+    <!-- Remote Setup (SSE) — Recommended -->
+    <div class="bg-surface-900 border border-brand-600/30 rounded-2xl">
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center justify-between">
+            <div class="flex flex-row items-center gap-3">
+                <i data-lucide="wifi" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+                <h3 class="text-base font-semibold text-white">Remote Setup (Recommended)</h3>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-green-600/20 text-green-400 border border-green-600/30">No Local Python Required</span>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="flex flex-row items-start gap-3 bg-green-900/20 border border-green-800/30 rounded-xl p-4">
+                <i data-lucide="zap" class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5"></i>
+                <p class="text-sm text-surface-300">
+                    The MCP server runs <strong class="text-white">remotely on the Arrissa server</strong> via SSE (Server-Sent Events).
+                    Just paste the config below — no Python installation, no local dependencies, works from any machine.
+                    Your API key is pre-configured on the server.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4">
+                <!-- VS Code -->
+                <div class="space-y-2">
+                    <div class="flex flex-row items-center gap-2">
+                        <i data-lucide="code" class="w-4 h-4 text-brand-400 flex-shrink-0"></i>
+                        <p class="text-sm font-semibold text-white">VS Code (GitHub Copilot)</p>
+                        <span class="text-xs text-surface-500">—</span>
+                        <span class="text-xs text-surface-400 font-mono">.vscode/mcp.json</span>
+                    </div>
+                    <div class="relative">
+                        <button onclick="copyConfig('remote-vscode-config')" class="absolute top-3 right-3 flex flex-row items-center gap-1.5 text-xs text-surface-400 hover:text-brand-400 transition bg-surface-900/80 px-2.5 py-1.5 rounded-lg">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i><span>Copy</span>
+                        </button>
+                        <pre id="remote-vscode-config" class="bg-surface-800 border border-surface-700 rounded-xl p-4 text-sm font-mono overflow-x-auto"><code class="language-json">{
+  "servers": {
+    "arrissa-trading-api": {
+      "type": "sse",
+      "url": "{{ site_url_value }}/mcp/sse"
+    }
+  }
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Claude Desktop -->
+                <div class="space-y-2">
+                    <div class="flex flex-row items-center gap-2">
+                        <i data-lucide="message-square" class="w-4 h-4 text-brand-400 flex-shrink-0"></i>
+                        <p class="text-sm font-semibold text-white">Claude Desktop</p>
+                        <span class="text-xs text-surface-500">—</span>
+                        <span class="text-xs text-surface-400 font-mono">claude_desktop_config.json</span>
+                    </div>
+                    <div class="relative">
+                        <button onclick="copyConfig('remote-claude-config')" class="absolute top-3 right-3 flex flex-row items-center gap-1.5 text-xs text-surface-400 hover:text-brand-400 transition bg-surface-900/80 px-2.5 py-1.5 rounded-lg">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i><span>Copy</span>
+                        </button>
+                        <pre id="remote-claude-config" class="bg-surface-800 border border-surface-700 rounded-xl p-4 text-sm font-mono overflow-x-auto"><code class="language-json">{
+  "mcpServers": {
+    "arrissa-trading-api": {
+      "url": "{{ site_url_value }}/mcp/sse"
+    }
+  }
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Cursor -->
+                <div class="space-y-2">
+                    <div class="flex flex-row items-center gap-2">
+                        <i data-lucide="mouse-pointer-2" class="w-4 h-4 text-brand-400 flex-shrink-0"></i>
+                        <p class="text-sm font-semibold text-white">Cursor</p>
+                        <span class="text-xs text-surface-500">—</span>
+                        <span class="text-xs text-surface-400 font-mono">.cursor/mcp.json</span>
+                    </div>
+                    <div class="relative">
+                        <button onclick="copyConfig('remote-cursor-config')" class="absolute top-3 right-3 flex flex-row items-center gap-1.5 text-xs text-surface-400 hover:text-brand-400 transition bg-surface-900/80 px-2.5 py-1.5 rounded-lg">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i><span>Copy</span>
+                        </button>
+                        <pre id="remote-cursor-config" class="bg-surface-800 border border-surface-700 rounded-xl p-4 text-sm font-mono overflow-x-auto"><code class="language-json">{
+  "mcpServers": {
+    "arrissa-trading-api": {
+      "url": "{{ site_url_value }}/mcp/sse"
+    }
+  }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Setup for Claude Desktop -->
     <div class="bg-surface-900 border border-surface-800 rounded-2xl">
-        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
-            <i data-lucide="message-square" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
-            <h3 class="text-base font-semibold text-white">Setup — Claude Desktop</h3>
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center justify-between">
+            <div class="flex flex-row items-center gap-3">
+                <i data-lucide="message-square" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+                <h3 class="text-base font-semibold text-white">Local Setup — Claude Desktop</h3>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-surface-700 text-surface-400 border border-surface-600">Alternative</span>
         </div>
         <div class="p-6 space-y-4">
             <p class="text-sm text-surface-300 leading-relaxed">
@@ -188,9 +281,12 @@
 
     <!-- Setup for VS Code -->
     <div class="bg-surface-900 border border-surface-800 rounded-2xl">
-        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
-            <i data-lucide="code" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
-            <h3 class="text-base font-semibold text-white">Setup — VS Code (GitHub Copilot)</h3>
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center justify-between">
+            <div class="flex flex-row items-center gap-3">
+                <i data-lucide="code" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+                <h3 class="text-base font-semibold text-white">Local Setup — VS Code (GitHub Copilot)</h3>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-surface-700 text-surface-400 border border-surface-600">Alternative</span>
         </div>
         <div class="p-6 space-y-4">
             <p class="text-sm text-surface-300 leading-relaxed">
@@ -221,9 +317,12 @@
 
     <!-- Setup for Cursor -->
     <div class="bg-surface-900 border border-surface-800 rounded-2xl">
-        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center gap-3">
-            <i data-lucide="mouse-pointer-2" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
-            <h3 class="text-base font-semibold text-white">Setup — Cursor</h3>
+        <div class="px-6 py-5 border-b border-surface-800 flex flex-row items-center justify-between">
+            <div class="flex flex-row items-center gap-3">
+                <i data-lucide="mouse-pointer-2" class="w-5 h-5 text-brand-400 flex-shrink-0"></i>
+                <h3 class="text-base font-semibold text-white">Local Setup — Cursor</h3>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-surface-700 text-surface-400 border border-surface-600">Alternative</span>
         </div>
         <div class="p-6 space-y-4">
             <p class="text-sm text-surface-300 leading-relaxed">
@@ -522,7 +621,7 @@
                 <div class="flex flex-col items-center">
                     <i data-lucide="arrow-right" class="w-6 h-6 text-surface-500 hidden md:block"></i>
                     <i data-lucide="arrow-down" class="w-6 h-6 text-surface-500 md:hidden"></i>
-                    <p class="text-xs text-surface-500 mt-1">stdio</p>
+                    <p class="text-xs text-surface-500 mt-1">SSE / stdio</p>
                 </div>
                 <div class="bg-surface-800 border border-brand-600/30 rounded-xl px-5 py-4 text-center">
                     <i data-lucide="cpu" class="w-8 h-8 text-brand-400 mx-auto mb-2"></i>

@@ -1,12 +1,18 @@
 """
 Arrissa MCP Server — exposes the entire Arrissa trading API as MCP tools.
 
-Run:  python mcp_server.py
+Run locally (stdio):   python mcp_server.py
+Run remotely (SSE):    python mcp_server.py --sse [--host 0.0.0.0] [--port 5002]
+
 Transport: stdio (for Claude Desktop, Cursor, VS Code, etc.)
+           sse  (for remote connections — VS Code, Cursor, etc. connect via URL)
 
 Environment variables (all optional — set via MCP client config):
   ARRISSA_API_URL     — Flask API base URL (default: http://localhost:5001)
   ARRISSA_API_KEY     — Default API key (so the AI never has to ask)
+  MCP_TRANSPORT       — "stdio" or "sse" (default: stdio, overridden by --sse flag)
+  MCP_HOST            — SSE bind host (default: 0.0.0.0)
+  MCP_PORT            — SSE bind port (default: 5002)
 """
 
 import os
@@ -871,4 +877,28 @@ def get_smart_updater_status() -> str:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    mcp.run(transport="stdio")
+    import argparse
+    parser = argparse.ArgumentParser(description="Arrissa MCP Server")
+    parser.add_argument("--sse", action="store_true", help="Run with SSE transport (for remote connections)")
+    parser.add_argument("--host", default=os.environ.get("MCP_HOST", "0.0.0.0"), help="SSE bind host (default: 0.0.0.0)")
+    parser.add_argument("--port", type=int, default=int(os.environ.get("MCP_PORT", "5002")), help="SSE bind port (default: 5002)")
+    parser.add_argument("--mount-path", default=os.environ.get("MCP_MOUNT_PATH", "/"), help="Mount path prefix (default: /)")
+    args = parser.parse_args()
+
+    transport = "sse" if args.sse or os.environ.get("MCP_TRANSPORT", "").lower() == "sse" else "stdio"
+
+    if transport == "sse":
+        # Set host/port/mount_path directly on the Settings object (env vars
+        # are read at FastMCP construction time, which happens at module load
+        # before argparse runs — so we mutate after the fact).
+        mcp.settings.host = args.host
+        mcp.settings.port = args.port
+        if args.mount_path != "/":
+            mcp.settings.mount_path = args.mount_path
+        print(f"Starting Arrissa MCP Server (SSE) on {args.host}:{args.port}")
+        print(f"  API: {API_BASE}")
+        print(f"  Mount path: {args.mount_path}")
+        print(f"  SSE endpoint: http://{args.host}:{args.port}{args.mount_path.rstrip('/')}/sse")
+        mcp.run(transport="sse")
+    else:
+        mcp.run(transport="stdio")
