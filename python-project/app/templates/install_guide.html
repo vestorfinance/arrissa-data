@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}VPS Installation Guide — {{ app_name }}{% endblock %}
+{% block title %}Installation Guide — {{ app_name }}{% endblock %}
 {% block body %}
 <div class="min-h-screen py-12 px-4">
     <div class="max-w-4xl mx-auto">
@@ -7,199 +7,531 @@
         <!-- Header -->
         <div class="text-center mb-10">
             <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-3">
-                {{ app_name }} — VPS Installation
+                {{ app_name }} — Installation Guide
             </h1>
             <p class="text-gray-400 max-w-2xl mx-auto">
-                Install {{ app_name }} on any Ubuntu VPS in one go. Fill in your details below and the installer will generate
-                a single set of commands you can copy &amp; paste into your terminal. No Linux experience required.
+                Choose how you want to run {{ app_name }}. Deploy to a VPS for 24/7 access, or run locally on your own machine.
             </p>
         </div>
 
-        <!-- Prerequisites -->
-        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
-            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Before You Start
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-gray-800 border border-gray-700 rounded-xl p-4">
-                    <p class="text-sm font-semibold text-indigo-400 mb-1">1. Get a VPS</p>
-                    <p class="text-sm text-gray-400">Ubuntu 22.04 or 24.04 from any provider (DigitalOcean, Hetzner, Contabo, etc.). Minimum 1 CPU / 1 GB RAM.</p>
-                </div>
-                <div class="bg-gray-800 border border-gray-700 rounded-xl p-4">
-                    <p class="text-sm font-semibold text-indigo-400 mb-1">2. Get a Domain</p>
-                    <p class="text-sm text-gray-400">Add your domain to <a href="https://dash.cloudflare.com" target="_blank" class="text-indigo-400 underline">Cloudflare</a>. We'll use a subdomain (e.g. <code class="text-indigo-300">data.yourdomain.com</code>).</p>
-                </div>
-                <div class="bg-gray-800 border border-gray-700 rounded-xl p-4">
-                    <p class="text-sm font-semibold text-indigo-400 mb-1">3. Point DNS</p>
-                    <p class="text-sm text-gray-400">In Cloudflare DNS, create an <strong class="text-white">A record</strong> for your subdomain pointing to your VPS IP. Set proxy to <strong class="text-white">DNS only</strong> (gray cloud).</p>
-                </div>
+        <!-- Tab Switcher -->
+        <div class="flex justify-center mb-8">
+            <div class="inline-flex bg-gray-900 border border-gray-700 rounded-xl p-1 gap-1">
+                <button onclick="switchTab('vps')" id="tab-vps"
+                    class="px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 bg-indigo-600 text-white">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"></path></svg>
+                        VPS / Ubuntu Server
+                    </span>
+                </button>
+                <button onclick="switchTab('local')" id="tab-local"
+                    class="px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 text-gray-400 hover:text-white">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        Local (macOS / Windows)
+                    </span>
+                </button>
             </div>
         </div>
 
-        <!-- SSH Connection Guide -->
-        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
-            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                How to Connect to Your VPS
-            </h2>
-            <div class="space-y-3 text-sm text-gray-300">
-                <p>Open a terminal on your computer (Terminal on Mac, PowerShell on Windows) and type:</p>
-                <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 font-mono text-indigo-300 text-sm">
-                    ssh root@<span class="text-yellow-400">YOUR_VPS_IP</span>
-                </div>
-                <p>Enter your VPS root password when prompted. You're now logged into your server.</p>
-                <div class="bg-yellow-900/20 border border-yellow-800/30 rounded-xl p-3 text-yellow-300">
-                    <strong>Tip:</strong> If you're on Windows and don't have SSH, download <a href="https://www.putty.org/" target="_blank" class="text-indigo-400 underline">PuTTY</a> or use Windows Terminal.
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!--  VPS TAB                                                    -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <div id="panel-vps">
+
+            <!-- Prerequisites -->
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Before You Start
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4">
+                        <p class="text-sm font-semibold text-indigo-400 mb-1">1. Get a VPS</p>
+                        <p class="text-sm text-gray-400">Ubuntu 22.04 or 24.04 from any provider (DigitalOcean, Hetzner, Contabo, etc.). Minimum 1 CPU / 1 GB RAM.</p>
+                    </div>
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4">
+                        <p class="text-sm font-semibold text-indigo-400 mb-1">2. Get a Domain</p>
+                        <p class="text-sm text-gray-400">Add your domain to <a href="https://dash.cloudflare.com" target="_blank" class="text-indigo-400 underline">Cloudflare</a>. We'll use a subdomain (e.g. <code class="text-indigo-300">data.yourdomain.com</code>).</p>
+                    </div>
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4">
+                        <p class="text-sm font-semibold text-indigo-400 mb-1">3. Point DNS</p>
+                        <p class="text-sm text-gray-400">In Cloudflare DNS, create an <strong class="text-white">A record</strong> for your subdomain pointing to your VPS IP. Set proxy to <strong class="text-white">DNS only</strong> (gray cloud).</p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Configuration Form -->
-        <div class="bg-gray-900 border border-indigo-800/30 rounded-2xl p-6 mb-8">
-            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                Your Server Details
-            </h2>
-            <p class="text-sm text-gray-400 mb-4">Enter your domain and a MySQL password. The installer generates all the commands.</p>
+            <!-- SSH Connection Guide -->
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    How to Connect to Your VPS
+                </h2>
+                <div class="space-y-3 text-sm text-gray-300">
+                    <p>Open a terminal on your computer (Terminal on Mac, PowerShell on Windows) and type:</p>
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 font-mono text-indigo-300 text-sm">
+                        ssh root@<span class="text-yellow-400">YOUR_VPS_IP</span>
+                    </div>
+                    <p>Enter your VPS root password when prompted. You're now logged into your server.</p>
+                    <div class="bg-yellow-900/20 border border-yellow-800/30 rounded-xl p-3 text-yellow-300">
+                        <strong>Tip:</strong> If you're on Windows and don't have SSH, download <a href="https://www.putty.org/" target="_blank" class="text-indigo-400 underline">PuTTY</a> or use Windows Terminal.
+                    </div>
+                </div>
+            </div>
 
-            <form id="config-form" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- VPS Configuration Form -->
+            <div class="bg-gray-900 border border-indigo-800/30 rounded-2xl p-6 mb-8">
+                <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Your Server Details
+                </h2>
+                <p class="text-sm text-gray-400 mb-4">Enter your domain and a MySQL password. The installer generates all the commands.</p>
+
+                <form id="config-form" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Subdomain</label>
+                            <input type="text" id="subdomain" required
+                                class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                       placeholder-gray-500 transition" placeholder="data.yourdomain.com">
+                            <p class="text-xs text-gray-500 mt-1">The subdomain you pointed to your VPS in Cloudflare</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">MySQL Password</label>
+                            <input type="text" id="mysql_pass" required
+                                class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                       placeholder-gray-500 transition" placeholder="MyStr0ngP@ss!">
+                            <p class="text-xs text-gray-500 mt-1">Choose a strong password for the MySQL database</p>
+                        </div>
+                    </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Subdomain</label>
-                        <input type="text" id="subdomain" required
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">App Name <span class="text-gray-500">(optional)</span></label>
+                        <input type="text" id="app_name_input" value="Arrissa Data"
                             class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
                                    focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
-                                   placeholder-gray-500 transition" placeholder="data.yourdomain.com">
-                        <p class="text-xs text-gray-500 mt-1">The subdomain you pointed to your VPS in Cloudflare</p>
+                                   placeholder-gray-500 transition" placeholder="Arrissa Data">
+                        <p class="text-xs text-gray-500 mt-1">Name shown in the web UI header</p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-1.5">MySQL Password</label>
-                        <input type="text" id="mysql_pass" required
-                            class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
-                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
-                                   placeholder-gray-500 transition" placeholder="MyStr0ngP@ss!">
-                        <p class="text-xs text-gray-500 mt-1">Choose a strong password for the MySQL database</p>
+
+                    <button type="submit"
+                        class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-lg
+                               rounded-lg transition-all duration-200 shadow-lg shadow-indigo-600/20
+                               focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900">
+                        Generate Installation Commands
+                    </button>
+                </form>
+            </div>
+
+            <!-- Generated VPS Commands -->
+            <div id="commands-section" class="hidden space-y-6">
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl">
+                    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">1</span>
+                            <h3 class="text-base font-semibold text-white">Install System Dependencies &amp; Database</h3>
+                        </div>
+                        <button onclick="copyBlock('cmd-1')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
                     </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1.5">App Name <span class="text-gray-500">(optional)</span></label>
-                    <input type="text" id="app_name_input" value="Arrissa Data"
-                        class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
-                               focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
-                               placeholder-gray-500 transition" placeholder="Arrissa Data">
-                    <p class="text-xs text-gray-500 mt-1">Name shown in the web UI header</p>
+                    <div class="p-4">
+                        <p class="text-sm text-gray-400 mb-3">Installs Python, MySQL (MariaDB), Redis, and Git. Creates the database and user.</p>
+                        <pre id="cmd-1" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap"></pre>
+                    </div>
                 </div>
 
-                <button type="submit"
-                    class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-lg
-                           rounded-lg transition-all duration-200 shadow-lg shadow-indigo-600/20
-                           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900">
-                    Generate Installation Commands
-                </button>
-            </form>
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl">
+                    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">2</span>
+                            <h3 class="text-base font-semibold text-white">Clone &amp; Install Arrissa</h3>
+                        </div>
+                        <button onclick="copyBlock('cmd-2')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm text-gray-400 mb-3">Clones the repo, creates a Python virtual environment, installs dependencies, and creates the .env config file.</p>
+                        <pre id="cmd-2" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl">
+                    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">3</span>
+                            <h3 class="text-base font-semibold text-white">Create System Services</h3>
+                        </div>
+                        <button onclick="copyBlock('cmd-3')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm text-gray-400 mb-3">Creates systemd services so Arrissa starts automatically on boot.</p>
+                        <pre id="cmd-3" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl">
+                    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">4</span>
+                            <h3 class="text-base font-semibold text-white">Configure Caddy (HTTPS &amp; Reverse Proxy)</h3>
+                        </div>
+                        <button onclick="copyBlock('cmd-4')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm text-gray-400 mb-3">Sets up Caddy with automatic HTTPS. Also configures the MCP SSE endpoint.</p>
+                        <pre id="cmd-4" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl">
+                    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">5</span>
+                            <h3 class="text-base font-semibold text-white">Start Everything &amp; Verify</h3>
+                        </div>
+                        <button onclick="copyBlock('cmd-5')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm text-gray-400 mb-3">Starts all services. After this, open your URL in a browser to complete setup.</p>
+                        <pre id="cmd-5" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+
+                <!-- Copy All -->
+                <div class="bg-indigo-900/20 border border-indigo-800/30 rounded-2xl p-6 text-center">
+                    <h3 class="text-lg font-bold text-white mb-2">Or Copy Everything at Once</h3>
+                    <p class="text-sm text-gray-400 mb-4">Paste this single block into your terminal and the entire installation runs automatically.</p>
+                    <button onclick="copyBlock('cmd-all')"
+                        class="inline-flex items-center gap-2 py-3 px-8 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold
+                               rounded-lg transition-all duration-200 shadow-lg shadow-indigo-600/20 mb-4">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                        Copy All Commands
+                    </button>
+                    <pre id="cmd-all" class="hidden"></pre>
+                </div>
+
+                <!-- What's Next -->
+                <div class="bg-gray-900 border border-green-800/30 rounded-2xl p-6 text-center">
+                    <div class="w-16 h-16 rounded-full bg-green-600/20 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">After Installation</h3>
+                    <p class="text-sm text-gray-400 mb-1">Open <strong class="text-white" id="final-url"></strong> in your browser.</p>
+                    <p class="text-sm text-gray-400">The setup wizard will guide you through creating your account and connecting your broker.</p>
+                </div>
+            </div>
         </div>
 
-        <!-- Generated Commands -->
-        <div id="commands-section" class="hidden space-y-6">
 
-            <!-- Step 1: System Setup -->
-            <div class="bg-gray-900 border border-gray-800 rounded-2xl">
-                <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">1</span>
-                        <h3 class="text-base font-semibold text-white">Install System Dependencies &amp; Database</h3>
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!--  LOCAL TAB                                                  -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <div id="panel-local" class="hidden">
+
+            <!-- Overview -->
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Local Installation
+                </h2>
+                <p class="text-sm text-gray-300 mb-3">
+                    Run {{ app_name }} on your own computer (macOS or Windows). The server runs at
+                    <code class="text-indigo-300">http://localhost:5001</code> and is only accessible from your machine.
+                </p>
+                <div class="bg-yellow-900/20 border border-yellow-800/30 rounded-xl p-3 text-yellow-300 text-sm">
+                    <strong>Note:</strong> Local mode doesn't include HTTPS or a public URL. For 24/7 access and AI agent
+                    (MCP) integration from anywhere, use the VPS option instead.
+                </div>
+            </div>
+
+            <!-- Prerequisites -->
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    What You Need
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4">
+                        <p class="text-sm font-semibold text-indigo-400 mb-1">Python 3.10+</p>
+                        <p class="text-sm text-gray-400">Download from <a href="https://www.python.org/downloads/" target="_blank" class="text-indigo-400 underline">python.org</a></p>
                     </div>
-                    <button onclick="copyBlock('cmd-1')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
-                </div>
-                <div class="p-4">
-                    <p class="text-sm text-gray-400 mb-3">This installs Python, MySQL (MariaDB), Redis, Caddy, and Git. Then creates the database and user.</p>
-                    <pre id="cmd-1" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap"></pre>
-                </div>
-            </div>
-
-            <!-- Step 2: App Install -->
-            <div class="bg-gray-900 border border-gray-800 rounded-2xl">
-                <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">2</span>
-                        <h3 class="text-base font-semibold text-white">Clone &amp; Install Arrissa</h3>
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4">
+                        <p class="text-sm font-semibold text-indigo-400 mb-1">MySQL or MariaDB</p>
+                        <p class="text-sm text-gray-400">
+                            macOS: <code class="text-indigo-300">brew install mysql</code><br>
+                            Windows: <a href="https://dev.mysql.com/downloads/installer/" target="_blank" class="text-indigo-400 underline">MySQL Installer</a>
+                        </p>
                     </div>
-                    <button onclick="copyBlock('cmd-2')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
-                </div>
-                <div class="p-4">
-                    <p class="text-sm text-gray-400 mb-3">Clones the repo, creates a Python virtual environment, installs dependencies, and creates the .env config file.</p>
-                    <pre id="cmd-2" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap"></pre>
-                </div>
-            </div>
-
-            <!-- Step 3: Systemd Services -->
-            <div class="bg-gray-900 border border-gray-800 rounded-2xl">
-                <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">3</span>
-                        <h3 class="text-base font-semibold text-white">Create System Services</h3>
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4">
+                        <p class="text-sm font-semibold text-indigo-400 mb-1">Redis</p>
+                        <p class="text-sm text-gray-400">
+                            macOS: <code class="text-indigo-300">brew install redis</code><br>
+                            Windows: <a href="https://github.com/tporadowski/redis/releases" target="_blank" class="text-indigo-400 underline">Redis for Windows</a> or via WSL
+                        </p>
                     </div>
-                    <button onclick="copyBlock('cmd-3')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
-                </div>
-                <div class="p-4">
-                    <p class="text-sm text-gray-400 mb-3">Creates systemd services so Arrissa starts automatically on boot. Includes the Flask API and MCP server.</p>
-                    <pre id="cmd-3" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap"></pre>
-                </div>
-            </div>
-
-            <!-- Step 4: Caddy -->
-            <div class="bg-gray-900 border border-gray-800 rounded-2xl">
-                <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">4</span>
-                        <h3 class="text-base font-semibold text-white">Configure Caddy (HTTPS &amp; Reverse Proxy)</h3>
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4">
+                        <p class="text-sm font-semibold text-indigo-400 mb-1">Git</p>
+                        <p class="text-sm text-gray-400">
+                            macOS: pre-installed or <code class="text-indigo-300">brew install git</code><br>
+                            Windows: <a href="https://git-scm.com/download/win" target="_blank" class="text-indigo-400 underline">git-scm.com</a>
+                        </p>
                     </div>
-                    <button onclick="copyBlock('cmd-4')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
-                </div>
-                <div class="p-4">
-                    <p class="text-sm text-gray-400 mb-3">Sets up Caddy as a reverse proxy with automatic HTTPS (Let's Encrypt). Also configures the MCP SSE endpoint.</p>
-                    <pre id="cmd-4" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap"></pre>
                 </div>
             </div>
 
-            <!-- Step 5: Start Everything -->
-            <div class="bg-gray-900 border border-gray-800 rounded-2xl">
-                <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">5</span>
-                        <h3 class="text-base font-semibold text-white">Start Everything &amp; Verify</h3>
+            <!-- Local OS Sub-tabs -->
+            <div class="flex justify-center mb-6">
+                <div class="inline-flex bg-gray-900 border border-gray-700 rounded-xl p-1 gap-1">
+                    <button onclick="switchLocalOS('mac')" id="tab-mac"
+                        class="px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 bg-indigo-600 text-white">
+                        macOS
+                    </button>
+                    <button onclick="switchLocalOS('win')" id="tab-win"
+                        class="px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 text-gray-400 hover:text-white">
+                        Windows
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── macOS Steps ── -->
+            <div id="panel-mac" class="space-y-6">
+
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl">
+                    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">1</span>
+                            <h3 class="text-base font-semibold text-white">Install Dependencies (Homebrew)</h3>
+                        </div>
+                        <button onclick="copyBlock('mac-1')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
                     </div>
-                    <button onclick="copyBlock('cmd-5')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
+                    <div class="p-4">
+                        <p class="text-sm text-gray-400 mb-3">Install Homebrew (if not installed), then MySQL, Redis, and Python.</p>
+                        <pre id="mac-1" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap"># Install Homebrew (skip if already installed)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install dependencies
+brew install python@3.12 mysql redis git
+
+# Start MySQL &amp; Redis
+brew services start mysql
+brew services start redis</pre>
+                    </div>
                 </div>
-                <div class="p-4">
-                    <p class="text-sm text-gray-400 mb-3">Starts all services and verifies everything is running. After this, open your URL in a browser to complete setup.</p>
-                    <pre id="cmd-5" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap"></pre>
+
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl">
+                    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">2</span>
+                            <h3 class="text-base font-semibold text-white">Create Database</h3>
+                        </div>
+                        <button onclick="copyBlock('mac-2')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
+                    </div>
+                    <div class="p-4">
+                        <pre id="mac-2" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap">mysql -u root -e "CREATE DATABASE IF NOT EXISTS arrissa_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"</pre>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl">
+                    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">3</span>
+                            <h3 class="text-base font-semibold text-white">Clone &amp; Install App</h3>
+                        </div>
+                        <button onclick="copyBlock('mac-3')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
+                    </div>
+                    <div class="p-4">
+                        <pre id="mac-3" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap"># Clone the repository
+git clone https://github.com/vestorfinance/arrissa-data.git
+cd arrissa-data/python-project
+
+# Create virtual environment &amp; install
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt</pre>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl">
+                    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">4</span>
+                            <h3 class="text-base font-semibold text-white">Create .env Config File</h3>
+                        </div>
+                        <button onclick="copyBlock('mac-4')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm text-gray-400 mb-3">Creates a <code class="text-indigo-300">.env</code> file with your config. MySQL root on macOS usually has no password.</p>
+                        <pre id="mac-4" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap">cat &gt; .env &lt;&lt; 'EOF'
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=
+MYSQL_DATABASE=arrissa_db
+
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_DB=0
+REDIS_PASSWORD=
+
+API_KEY=change_me
+APP_NAME=Arrissa Data
+
+TRADELOCKER_DEMO_BASE_URL=https://demo.tradelocker.com/backend-api
+TRADELOCKER_LIVE_BASE_URL=https://live.tradelocker.com/backend-api
+EOF
+
+# Generate a random API key and update .env
+API_KEY=$(python3 -c "import secrets; print(secrets.token_hex(32))")
+sed -i '' "s/^API_KEY=.*/API_KEY=$API_KEY/" .env
+echo "Your API key: $API_KEY"</pre>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl">
+                    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">5</span>
+                            <h3 class="text-base font-semibold text-white">Start the Server</h3>
+                        </div>
+                        <button onclick="copyBlock('mac-5')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
+                    </div>
+                    <div class="p-4">
+                        <pre id="mac-5" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap">python main.py</pre>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-green-800/30 rounded-2xl p-6 text-center">
+                    <div class="w-16 h-16 rounded-full bg-green-600/20 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">You're Ready!</h3>
+                    <p class="text-sm text-gray-400 mb-1">Open <strong class="text-white">http://localhost:5001</strong> in your browser.</p>
+                    <p class="text-sm text-gray-400">The setup wizard will guide you through creating your account and connecting your broker.</p>
                 </div>
             </div>
 
-            <!-- Copy All -->
-            <div class="bg-indigo-900/20 border border-indigo-800/30 rounded-2xl p-6 text-center">
-                <h3 class="text-lg font-bold text-white mb-2">Or Copy Everything at Once</h3>
-                <p class="text-sm text-gray-400 mb-4">Paste this single block into your terminal and the entire installation runs automatically.</p>
-                <button onclick="copyBlock('cmd-all')"
-                    class="inline-flex items-center gap-2 py-3 px-8 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold
-                           rounded-lg transition-all duration-200 shadow-lg shadow-indigo-600/20 mb-4">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-                    Copy All Commands
-                </button>
-                <pre id="cmd-all" class="hidden"></pre>
+            <!-- ── Windows Steps ── -->
+            <div id="panel-win" class="hidden space-y-6">
+
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl">
+                    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">1</span>
+                            <h3 class="text-base font-semibold text-white">Install Prerequisites</h3>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm text-gray-400 mb-3">Download and install these (use default settings):</p>
+                        <div class="space-y-2 text-sm">
+                            <a href="https://www.python.org/downloads/" target="_blank" class="flex items-center gap-2 text-indigo-400 hover:text-indigo-300">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Python 3.12+ — <strong>check "Add to PATH"</strong> during install
+                            </a>
+                            <a href="https://dev.mysql.com/downloads/installer/" target="_blank" class="flex items-center gap-2 text-indigo-400 hover:text-indigo-300">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                MySQL 8.0+ Community Server — note the root password you set
+                            </a>
+                            <a href="https://github.com/tporadowski/redis/releases" target="_blank" class="flex items-center gap-2 text-indigo-400 hover:text-indigo-300">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Redis for Windows (or use WSL)
+                            </a>
+                            <a href="https://git-scm.com/download/win" target="_blank" class="flex items-center gap-2 text-indigo-400 hover:text-indigo-300">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Git for Windows
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl">
+                    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">2</span>
+                            <h3 class="text-base font-semibold text-white">Create Database</h3>
+                        </div>
+                        <button onclick="copyBlock('win-2')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm text-gray-400 mb-3">Open <strong class="text-white">Command Prompt</strong> or <strong class="text-white">PowerShell</strong> and run:</p>
+                        <pre id="win-2" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap">mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS arrissa_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"</pre>
+                        <p class="text-xs text-gray-500 mt-2">You'll be prompted for the MySQL root password you set during installation.</p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl">
+                    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">3</span>
+                            <h3 class="text-base font-semibold text-white">Clone &amp; Install App</h3>
+                        </div>
+                        <button onclick="copyBlock('win-3')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
+                    </div>
+                    <div class="p-4">
+                        <pre id="win-3" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap">git clone https://github.com/vestorfinance/arrissa-data.git
+cd arrissa-data\python-project
+
+python -m venv .venv
+.venv\Scripts\activate
+pip install --upgrade pip
+pip install -r requirements.txt</pre>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl">
+                    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">4</span>
+                            <h3 class="text-base font-semibold text-white">Create .env Config File</h3>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm text-gray-400 mb-3">Create a file called <code class="text-indigo-300">.env</code> in the <code class="text-indigo-300">python-project</code> folder with this content. <strong class="text-white">Change the password and API key.</strong></p>
+                        <pre id="win-4" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap">MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=your_mysql_root_password
+MYSQL_DATABASE=arrissa_db
+
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_DB=0
+REDIS_PASSWORD=
+
+API_KEY=paste_a_random_key_here
+APP_NAME=Arrissa Data
+
+TRADELOCKER_DEMO_BASE_URL=https://demo.tradelocker.com/backend-api
+TRADELOCKER_LIVE_BASE_URL=https://live.tradelocker.com/backend-api</pre>
+                        <div class="bg-indigo-900/20 border border-indigo-800/30 rounded-xl p-3 mt-3 text-sm text-indigo-300">
+                            <strong>Generate an API key</strong> — run this in your terminal:<br>
+                            <code class="text-green-400">python -c "import secrets; print(secrets.token_hex(32))"</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl">
+                    <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-bold text-white">5</span>
+                            <h3 class="text-base font-semibold text-white">Start the Server</h3>
+                        </div>
+                        <button onclick="copyBlock('win-5')" class="text-xs text-gray-400 hover:text-indigo-400 px-3 py-1.5 bg-gray-800 rounded-lg transition">Copy</button>
+                    </div>
+                    <div class="p-4">
+                        <pre id="win-5" class="bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm font-mono text-green-400 overflow-x-auto whitespace-pre-wrap">python main.py</pre>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-green-800/30 rounded-2xl p-6 text-center">
+                    <div class="w-16 h-16 rounded-full bg-green-600/20 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">You're Ready!</h3>
+                    <p class="text-sm text-gray-400 mb-1">Open <strong class="text-white">http://localhost:5001</strong> in your browser.</p>
+                    <p class="text-sm text-gray-400">The setup wizard will guide you through creating your account and connecting your broker.</p>
+                </div>
             </div>
 
-            <!-- What's Next -->
-            <div class="bg-gray-900 border border-green-800/30 rounded-2xl p-6 text-center">
-                <div class="w-16 h-16 rounded-full bg-green-600/20 flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                </div>
-                <h3 class="text-lg font-bold text-white mb-2">After Installation</h3>
-                <p class="text-sm text-gray-400 mb-1">Open <strong class="text-white" id="final-url"></strong> in your browser.</p>
-                <p class="text-sm text-gray-400">The setup wizard will guide you through creating your account and connecting your broker.</p>
-            </div>
         </div>
 
     </div>
@@ -210,9 +542,37 @@ function copyBlock(id) {
     const el = document.getElementById(id);
     const text = el.textContent;
     navigator.clipboard.writeText(text).then(() => {
-        const btn = el.closest('.bg-gray-900, .bg-indigo-900\\/20')?.querySelector('button[onclick*="copyBlock"]');
-        if (btn) { const orig = btn.textContent; btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = orig, 2000); }
+        const btn = el.closest('.bg-gray-900, .bg-indigo-900\\/20')
+            ? el.closest('.bg-gray-900, .bg-indigo-900\\/20').querySelector('button[onclick*="copyBlock"]')
+            : null;
+        if (btn) {
+            const orig = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = orig, 2000);
+        }
     });
+}
+
+function switchTab(tab) {
+    document.getElementById('panel-vps').classList.toggle('hidden', tab !== 'vps');
+    document.getElementById('panel-local').classList.toggle('hidden', tab !== 'local');
+    document.getElementById('tab-vps').className = tab === 'vps'
+        ? 'px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 bg-indigo-600 text-white'
+        : 'px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 text-gray-400 hover:text-white';
+    document.getElementById('tab-local').className = tab === 'local'
+        ? 'px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 bg-indigo-600 text-white'
+        : 'px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 text-gray-400 hover:text-white';
+}
+
+function switchLocalOS(os) {
+    document.getElementById('panel-mac').classList.toggle('hidden', os !== 'mac');
+    document.getElementById('panel-win').classList.toggle('hidden', os !== 'win');
+    document.getElementById('tab-mac').className = os === 'mac'
+        ? 'px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 bg-indigo-600 text-white'
+        : 'px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 text-gray-400 hover:text-white';
+    document.getElementById('tab-win').className = os === 'win'
+        ? 'px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 bg-indigo-600 text-white'
+        : 'px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 text-gray-400 hover:text-white';
 }
 
 document.getElementById('config-form').addEventListener('submit', function(e) {
@@ -220,14 +580,13 @@ document.getElementById('config-form').addEventListener('submit', function(e) {
 
     const subdomain = document.getElementById('subdomain').value.trim();
     const mysqlPass = document.getElementById('mysql_pass').value.trim();
-    const appName = document.getElementById('app_name_input').value.trim() || 'Arrissa Data';
+    const appName   = document.getElementById('app_name_input').value.trim() || 'Arrissa Data';
 
     if (!subdomain || !mysqlPass) return;
 
-    // Generate a random API key (64 hex chars)
-    const apiKey = Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2,'0')).join('');
+    const apiKey = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
 
-    // Step 1: System deps + DB
     const cmd1 = `# ── Update system & install dependencies ──
 apt update && apt upgrade -y
 apt install -y python3 python3-pip python3-venv mariadb-server redis-server git curl debian-keyring debian-archive-keyring apt-transport-https software-properties-common
@@ -242,7 +601,6 @@ mysql -u root -e "CREATE USER IF NOT EXISTS 'arrissa_user'@'localhost' IDENTIFIE
 mysql -u root -e "GRANT ALL PRIVILEGES ON arrissa_db.* TO 'arrissa_user'@'localhost'; FLUSH PRIVILEGES;"
 echo "✓ Database ready"`;
 
-    // Step 2: Clone & install
     const cmd2 = `# ── Clone the repository ──
 cd /root
 git clone https://github.com/vestorfinance/arrissa-data.git
@@ -256,31 +614,23 @@ pip install -r requirements.txt
 
 # ── Create .env configuration file ──
 cat > .env << 'ENVEOF'
-# ─── MySQL ────────────────────────────
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
 MYSQL_USER=arrissa_user
 MYSQL_PASSWORD=${mysqlPass}
 MYSQL_DATABASE=arrissa_db
-
-# ─── Redis ────────────────────────────
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_DB=0
 REDIS_PASSWORD=
-
-# ─── App ──────────────────────────────
 API_KEY=${apiKey}
 APP_NAME=${appName}
-
-# ─── TradeLocker ──────────────────────
 TRADELOCKER_DEMO_BASE_URL=https://demo.tradelocker.com/backend-api
 TRADELOCKER_LIVE_BASE_URL=https://live.tradelocker.com/backend-api
 ENVEOF
 
 echo "✓ App installed & configured"`;
 
-    // Step 3: Systemd services
     const cmd3 = `# ── Create Flask API service ──
 cat > /etc/systemd/system/arrissa-data.service << 'SVCEOF'
 [Unit]
@@ -323,12 +673,10 @@ Environment=ARRISSA_API_KEY=${apiKey}
 WantedBy=multi-user.target
 MCPEOF
 
-# ── Enable services ──
 systemctl daemon-reload
 systemctl enable arrissa-data arrissa-mcp
 echo "✓ Services created"`;
 
-    // Step 4: Caddy
     const cmd4 = `# ── Install Caddy ──
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
@@ -337,30 +685,18 @@ apt update && apt install -y caddy
 # ── Configure Caddy ──
 cat > /etc/caddy/Caddyfile << 'CADDYEOF'
 ${subdomain} {
-\thandle_path /mcp/* {
-\t\treverse_proxy localhost:5002 {
-\t\t\tflush_interval -1
-\t\t\theader_up Host localhost:5002
-\t\t}
-\t}
+    handle_path /mcp/* {
+        reverse_proxy localhost:5002 {
+            flush_interval -1
+            header_up Host localhost:5002
+        }
+    }
 
-\thandle {
-\t\treverse_proxy localhost:5001
-\t}
+    handle {
+        reverse_proxy localhost:5001
+    }
 
-\tencode gzip
-
-\theader {
-\t\t-Server
-\t\tX-Frame-Options "SAMEORIGIN"
-\t\tX-Content-Type-Options "nosniff"
-\t\tX-XSS-Protection "1; mode=block"
-\t\tReferrer-Policy "strict-origin-when-cross-origin"
-\t}
-
-\tlog {
-\t\toutput file /var/log/caddy/arrissa-data.log
-\t}
+    encode gzip
 }
 CADDYEOF
 
@@ -369,7 +705,6 @@ caddy fmt --overwrite /etc/caddy/Caddyfile
 systemctl enable caddy
 echo "✓ Caddy configured"`;
 
-    // Step 5: Start
     const cmd5 = `# ── Start all services ──
 systemctl restart mariadb redis-server
 systemctl start arrissa-data
@@ -379,28 +714,19 @@ sleep 2
 systemctl restart caddy
 sleep 3
 
-# ── Verify everything is running ──
+# ── Verify ──
 echo ""
 echo "════════════════════════════════════════════════"
 echo "  ✓ Installation Complete!"
 echo "════════════════════════════════════════════════"
 echo ""
-echo "  Services:"
-systemctl is-active arrissa-data | xargs -I{} echo "    Flask API:   {}"
-systemctl is-active arrissa-mcp  | xargs -I{} echo "    MCP Server:  {}"
-systemctl is-active caddy        | xargs -I{} echo "    Caddy:       {}"
-echo ""
-echo "  Open in your browser:"
-echo "    https://${subdomain}"
-echo ""
-echo "  MCP SSE endpoint:"
-echo "    https://${subdomain}/mcp/sse"
+echo "  Open:  https://${subdomain}"
+echo "  MCP:   https://${subdomain}/mcp/sse"
 echo ""
 echo "  The setup wizard will walk you through"
 echo "  creating your account and connecting a broker."
 echo "════════════════════════════════════════════════"`;
 
-    // Set content
     document.getElementById('cmd-1').textContent = cmd1;
     document.getElementById('cmd-2').textContent = cmd2;
     document.getElementById('cmd-3').textContent = cmd3;
@@ -409,7 +735,6 @@ echo "════════════════════════�
     document.getElementById('cmd-all').textContent = [cmd1, cmd2, cmd3, cmd4, cmd5].join('\n\n');
     document.getElementById('final-url').textContent = 'https://' + subdomain;
 
-    // Show commands
     document.getElementById('commands-section').classList.remove('hidden');
     document.getElementById('commands-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
