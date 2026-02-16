@@ -401,8 +401,19 @@ def login_required(f):
     return decorated
 
 
+def _needs_setup():
+    """Return True if no users exist (first-run setup required)."""
+    db = get_db()
+    try:
+        return db.query(User).count() == 0
+    finally:
+        db.close()
+
+
 @app.route("/")
 def index():
+    if _needs_setup():
+        return redirect("/setup")
     if "user_id" in session:
         return redirect("/dashboard")
     return redirect("/login")
@@ -410,6 +421,9 @@ def index():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if _needs_setup():
+        return redirect("/setup")
+
     if request.method == "GET":
         return render_template("login.html")
 
@@ -424,6 +438,136 @@ def login():
 
         session["user_id"] = user.id
         return redirect("/dashboard")
+    finally:
+        db.close()
+
+
+# ─── Installation Guide (public) ─────────────────────────────────────────────
+
+@app.route("/install")
+def install_guide():
+    """Public VPS installation guide with generated commands."""
+    return render_template("install_guide.html", app_name=APP_NAME)
+
+
+# ─── First-Run Setup Wizard ──────────────────────────────────────────────────
+
+@app.route("/setup")
+def setup_wizard():
+    """Show the web-based setup wizard (only if no users exist)."""
+    if not _needs_setup():
+        return redirect("/login")
+    return render_template("setup.html", app_name=APP_NAME)
+
+
+@app.route("/setup/create-account", methods=["POST"])
+def setup_create_account():
+    """API: Create the first admin user account."""
+    if not _needs_setup():
+        return jsonify({"error": "Setup already completed. An account already exists."}), 400
+
+    data = request.get_json() or {}
+    username = (data.get("username") or "").strip()
+    first_name = (data.get("first_name") or "").strip() or "Admin"
+    last_name = (data.get("last_name") or "").strip() or "User"
+    email = (data.get("email") or "").strip()
+    password = data.get("password") or ""
+
+    if not username:
+        return jsonify({"error": "Username is required."}), 400
+    if not email or "@" not in email:
+        return jsonify({"error": "A valid email is required."}), 400
+    if len(password) < 4:
+        return jsonify({"error": "Password must be at least 4 characters."}), 400
+
+    db = get_db()
+    try:
+        user = User(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+        )
+        user.set_password(password)
+        # Detect site URL from the request
+        site_url = request.host_url.rstrip("/")
+        user.site_url = site_url
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        # Auto-login
+        session["user_id"] = user.id
+
+        return jsonify({"ok": True, "api_key": user.api_key, "user_id": user.id})
+    except Exception as e:
+        db.rollback()
+        err = str(e)
+        if "Duplicate" in err and "username" in err:
+            return jsonify({"error": "That username is already taken."}), 400
+        if "Duplicate" in err and "email" in err:
+            return jsonify({"error": "That email is already registered."}), 400
+        return jsonify({"error": f"Could not create account: {err}"}), 500
+    finally:
+        db.close()
+
+
+@app.route("/setup/connect-broker", methods=["POST"])
+def setup_connect_broker():
+    """API: Connect a TradeLocker broker during setup."""
+    if "user_id" not in session:
+        return jsonify({"error": "Please create your account first (step 1)."}), 401
+
+    data = request.get_json() or {}
+    email = (data.get("email") or "").strip()
+    password = data.get("password") or ""
+    server = (data.get("server") or "").strip()
+    environment = (data.get("environment") or "demo").strip().lower()
+
+    if not email or not password or not server:
+        return jsonify({"error": "Email, password, and server are all required."}), 400
+
+    auth = tradelocker_authenticate(email, password, server, environment)
+    if not auth:
+        return jsonify({"error": "TradeLocker authentication failed. Check your credentials and server name."}), 400
+
+    db = get_db()
+    try:
+        user_id = session["user_id"]
+        credential = TradeLockerCredential(
+            user_id=user_id,
+            email=email,
+            server=server,
+            environment=environment,
+            access_token=auth["accessToken"],
+            refresh_token=auth["refreshToken"],
+            token_expire_date=auth.get("expireDate"),
+        )
+        db.add(credential)
+        db.flush()
+
+        accounts = tradelocker_get_accounts(auth["accessToken"], environment)
+        synced = 0
+        if accounts:
+            for acc in accounts:
+                db.add(TradeLockerAccount(
+                    credential_id=credential.id,
+                    user_id=user_id,
+                    arrissa_id=generate_arrissa_id(acc["accNum"], email),
+                    account_id=acc["id"],
+                    name=acc.get("name"),
+                    currency=acc.get("currency"),
+                    status=acc.get("status"),
+                    acc_num=acc["accNum"],
+                    account_balance=acc.get("accountBalance") or acc.get("aaccountBalance"),
+                ))
+                synced += 1
+
+        db.commit()
+        return jsonify({"ok": True, "accounts_synced": synced})
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": f"Failed to connect broker: {e}"}), 500
     finally:
         db.close()
 

@@ -4,6 +4,59 @@ A self-hosted trading data API that connects to [TradeLocker](https://tradelocke
 
 ---
 
+## Features
+
+- **Market Data** — OHLCV candlestick data for any tradeable instrument
+- **Charting** — Generate candlestick chart images (PNG) with moving averages, S&R, and order blocks
+- **Economic News** — Real-time economic calendar with impact filtering
+- **Trading** — Place, modify, and close trades via API or MCP
+- **Account Management** — Balance, equity, margin, P&L tracking
+- **MCP Server** — Full AI agent integration (Claude, Cursor, VS Code Copilot)
+- **Web Dashboard** — Browser-based UI for account management, broker connections, and settings
+
+---
+
+## Quick Start
+
+### Option A: VPS Deployment (Recommended)
+
+Deploy on any Ubuntu VPS with a single copy-paste install script.
+
+1. Get a VPS (Ubuntu 22.04+) and a domain on [Cloudflare](https://dash.cloudflare.com)
+2. Point a subdomain (e.g. `data.yourdomain.com`) to your VPS IP (A record, DNS only)
+3. SSH into your VPS and visit the install guide at:
+
+   **`https://your-existing-instance.com/install`**
+
+   Or follow the manual steps below.
+
+### Option B: Local Development
+
+```bash
+# Clone
+git clone https://github.com/vestorfinance/arrissa-data.git
+cd arrissa-data/python-project
+
+# Python environment
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# Database (MySQL/MariaDB must be running)
+mysql -u root -p -e "CREATE DATABASE arrissa_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# Configure
+cp .env.example .env
+# Edit .env with your MySQL credentials and a random API_KEY
+
+# Start
+python main.py
+```
+
+Open **http://localhost:5001** — the setup wizard will guide you through creating your account and connecting a broker.
+
+---
+
 ## Prerequisites
 
 | Dependency | Version | Notes |
@@ -15,144 +68,14 @@ A self-hosted trading data API that connects to [TradeLocker](https://tradelocke
 
 ---
 
-## Quick Start
+## Environment Variables
 
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/vestorfinance/arrissa-data.git
-cd arrissa-data/python-project
-```
-
-### 2. Install Dependencies
-
-<details>
-<summary><strong>macOS</strong></summary>
-
-```bash
-# Install Homebrew (if not installed)
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# Install system deps
-brew install python@3.12 mysql redis git
-
-# Start MySQL & Redis
-brew services start mysql
-brew services start redis
-
-# Create virtual environment & install Python packages
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-</details>
-
-<details>
-<summary><strong>Ubuntu / Debian</strong></summary>
-
-```bash
-# Update & install system deps
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y python3 python3-pip python3-venv mysql-server redis-server git
-
-# Start MySQL & Redis
-sudo systemctl start mysql
-sudo systemctl enable mysql
-sudo systemctl start redis-server
-sudo systemctl enable redis-server
-
-# Secure MySQL (set root password)
-sudo mysql_secure_installation
-
-# Create virtual environment & install Python packages
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-</details>
-
-<details>
-<summary><strong>Windows</strong></summary>
-
-```powershell
-# Install Python 3.12+ from https://www.python.org/downloads/
-# Install MySQL 8.0+ from https://dev.mysql.com/downloads/installer/
-# Install Redis via WSL2 or https://github.com/microsoftarchive/redis/releases
-# Install Git from https://git-scm.com/download/win
-
-# Open PowerShell / Command Prompt
-cd python-project
-
-# Create virtual environment & install
-python -m venv .venv
-.venv\Scripts\activate
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-</details>
-
-<details>
-<summary><strong>Docker / Ubuntu Container</strong></summary>
-
-```bash
-# Pull and run an Ubuntu container
-docker run -it --name arrissa -p 5001:5001 ubuntu:22.04 bash
-
-# Inside the container:
-apt update && apt install -y python3 python3-pip python3-venv mysql-server redis-server git curl
-
-# Start MySQL & Redis
-service mysql start
-service redis-server start
-
-# Set MySQL root password
-mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_password'; FLUSH PRIVILEGES;"
-
-# Clone & install
-cd /opt
-git clone https://github.com/vestorfinance/arrissa-data.git
-cd arrissa-data/python-project
-
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-</details>
-
-### 3. Create the MySQL Database
-
-```bash
-# Log in to MySQL
-mysql -u root -p
-
-# Run this SQL:
-CREATE DATABASE arrissa_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-exit;
-```
-
-### 4. Configure Environment Variables
-
-```bash
-# Copy the example env file
-cp .env.example .env
-
-# Edit .env with your values
-nano .env   # or use any text editor
-```
-
-Set these values in `.env`:
+Create a `.env` file in `python-project/`:
 
 ```dotenv
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
-MYSQL_USER=root
+MYSQL_USER=arrissa_user
 MYSQL_PASSWORD=your_mysql_password
 MYSQL_DATABASE=arrissa_db
 
@@ -161,88 +84,72 @@ REDIS_PORT=6379
 REDIS_DB=0
 REDIS_PASSWORD=
 
-API_KEY=change_me_to_a_random_secret
+API_KEY=your_random_api_key
 APP_NAME=Arrissa Data
 
 TRADELOCKER_DEMO_BASE_URL=https://demo.tradelocker.com/backend-api
 TRADELOCKER_LIVE_BASE_URL=https://live.tradelocker.com/backend-api
 ```
 
-> **Tip:** Generate a random API_KEY with: `python3 -c "import secrets; print(secrets.token_hex(32))"`
+> **Tip:** Generate a random API_KEY: `python3 -c "import secrets; print(secrets.token_hex(32))"`
 
-### 5. First-Time Setup (Create Your Account)
+---
 
-```bash
-python setup.py
-```
+## First-Time Setup
 
-This will:
-- Create all database tables
-- Walk you through creating your admin user account
-- Display your personal API key
-- Show you how to connect a broker
+When you open the app for the first time, a **web-based setup wizard** walks you through:
 
-### 6. Open a Broker Account
+1. **Create your account** — username, email, password
+2. **Connect a broker** — enter your TradeLocker credentials
+3. **Done** — your API key is displayed, and you're ready to trade
+
+No command-line setup required.
+
+### Getting a Broker Account
 
 Arrissa connects to **TradeLocker**-powered brokers. You need a broker account to access market data and trade.
 
-1. **Open a FREE demo account at HeroFX:**
-
-   **https://herofx.co/?partner_code=8138744**
-
-2. During sign-up, choose **"TradeLocker"** as your trading platform.
-
-3. Once registered, note your:
-   - **Email** — your HeroFX login email
-   - **Password** — your HeroFX login password
-   - **Server** — e.g. `OSP-DEMO` for demo accounts
-
-### 7. Start the Server
-
-```bash
-python main.py
-```
-
-The server starts at **http://localhost:5001**.
-
-### 8. Connect Your Broker
-
-1. Open **http://localhost:5001** in your browser
-2. Log in with the credentials you created in step 5
-3. Go to the **Brokers** page
-4. Click **Add Broker** and enter your HeroFX / TradeLocker credentials
-5. Arrissa syncs your trading accounts automatically
-
-You're ready to go!
+1. Open a **FREE demo account** at a TradeLocker broker (e.g. [HeroFX](https://herofx.co))
+2. Choose **TradeLocker** as your trading platform during sign-up
+3. Note your email, password, and server name (e.g. `OSP-DEMO`)
 
 ---
 
 ## MCP Server (AI Agent Integration)
 
-Arrissa includes an MCP (Model Context Protocol) server so AI agents like Claude Desktop, Cursor, or VS Code Copilot can interact with your trading data.
+Arrissa includes an MCP (Model Context Protocol) server so AI agents can interact with your trading data.
 
-### Setup for Claude Desktop / Cursor / VS Code
+### Remote SSE (Recommended for VPS)
 
-1. Get your MCP config from the web UI at **http://localhost:5001/mcp-server**
+```json
+{
+  "mcpServers": {
+    "arrissa-trading-api": {
+      "type": "sse",
+      "url": "https://data.yourdomain.com/mcp/sse"
+    }
+  }
+}
+```
 
-2. Or manually add to your MCP client config:
+### Local stdio
 
 ```json
 {
   "mcpServers": {
     "arrissa-trading-api": {
       "command": "python",
-      "args": ["/full/path/to/arrissa-data/python-project/mcp_server.py"],
+      "args": ["/path/to/arrissa-data/python-project/mcp_server.py"],
       "env": {
         "ARRISSA_API_URL": "http://localhost:5001",
-        "ARRISSA_API_KEY": "your_api_key_here"
+        "ARRISSA_API_KEY": "your_api_key"
       }
     }
   }
 }
 ```
 
-3. Make sure the Flask server (`python main.py`) is running before using MCP tools.
+Full setup instructions are available in the web UI at **/mcp-server**.
 
 ---
 
@@ -270,24 +177,17 @@ All API endpoints require an `X-API-Key` header. Get your key from the **Setting
 ```
 python-project/
 ├── main.py              # Entry point — starts Flask server
-├── setup.py             # First-run setup script
 ├── mcp_server.py        # MCP server for AI agents
-├── mcp_config.json      # MCP config template
 ├── requirements.txt     # Python dependencies
-├── .env.example         # Environment variable template
 ├── .env                 # Your local config (git-ignored)
 └── app/
     ├── config.py        # Environment variable loading
     ├── database.py      # SQLAlchemy engine & session
     ├── routes.py        # All Flask routes & API endpoints
     ├── smart_updater.py # Background economic event updater
-    ├── news_client.py   # TradingView economic data client
+    ├── news_client.py   # Economic data client
     ├── tradelocker_client.py  # TradeLocker API client
     ├── models/          # SQLAlchemy models
-    │   ├── user.py
-    │   ├── tradelocker.py
-    │   ├── economic_event.py
-    │   └── asp_tool.py
     └── templates/       # Jinja2 HTML templates (web UI)
 ```
 
@@ -296,10 +196,6 @@ python-project/
 ## Troubleshooting
 
 ### MySQL connection refused
-
-```
-sqlalchemy.exc.OperationalError: Can't connect to MySQL server
-```
 
 - Ensure MySQL is running: `sudo systemctl status mysql` (Linux) or `brew services list` (macOS)
 - Check `.env` values for `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`
@@ -318,26 +214,12 @@ sqlalchemy.exc.OperationalError: Can't connect to MySQL server
 ### Port 5001 already in use
 
 ```bash
-# Find what's using port 5001
 lsof -i :5001       # macOS / Linux
 netstat -ano | findstr :5001  # Windows
-
-# Or change the port in main.py
 ```
-
----
-
-## Credits
-
-Created by **Ngonidzashe Jiji** (David Richchild)
-
-- [Facebook](https://www.facebook.com/davidrichchild/)
-- [YouTube](https://www.youtube.com/@davidrichchild)
-- [Instagram](https://www.instagram.com/davidrichchild/)
-- [Telegram](https://t.me/real_david_richchild)
 
 ---
 
 ## License
 
-This project is proprietary software by [Arrissa Pty Ltd](https://github.com/vestorfinance).
+Proprietary software by [Arrissa Pty Ltd](https://github.com/vestorfinance).

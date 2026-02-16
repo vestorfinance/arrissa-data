@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+{% block title %}Setup — {{ app_name }}{% endblock %}
+{% block body %}
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-2xl">
+
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                {{ app_name }}
+            </h1>
+            <p class="text-gray-400 mt-2">Welcome! Let's set up your account.</p>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="flex items-center justify-center gap-3 mb-8">
+            <div id="step-dot-1" class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold transition-all">1</div>
+            <div class="w-12 h-0.5 bg-gray-700" id="step-line-1"></div>
+            <div id="step-dot-2" class="w-10 h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center text-sm font-bold transition-all">2</div>
+            <div class="w-12 h-0.5 bg-gray-700" id="step-line-2"></div>
+            <div id="step-dot-3" class="w-10 h-10 rounded-full bg-gray-700 text-gray-400 flex items-center justify-center text-sm font-bold transition-all">3</div>
+        </div>
+
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
+
+            {% if error %}
+            <div class="bg-red-900/40 border border-red-700 text-red-300 px-4 py-3 rounded-lg mb-6 text-sm">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            {% if success %}
+            <div class="bg-green-900/40 border border-green-700 text-green-300 px-4 py-3 rounded-lg mb-6 text-sm">
+                {{ success }}
+            </div>
+            {% endif %}
+
+            <!-- ═══ STEP 1: Create Account ═══ -->
+            <div id="step-1" class="step-panel">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-white">Create Your Account</h2>
+                    <p class="text-gray-400 text-sm mt-1">This will be your admin login for the dashboard.</p>
+                </div>
+
+                <form id="account-form" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">First Name</label>
+                            <input type="text" name="first_name" id="first_name" required
+                                class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                       placeholder-gray-500 transition" placeholder="John">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Last Name</label>
+                            <input type="text" name="last_name" id="last_name" required
+                                class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                       placeholder-gray-500 transition" placeholder="Doe">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Username</label>
+                        <input type="text" name="username" id="username" required
+                            class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                   placeholder-gray-500 transition" placeholder="admin">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
+                        <input type="email" name="email" id="email" required
+                            class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                   placeholder-gray-500 transition" placeholder="you@example.com">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Password</label>
+                        <input type="password" name="password" id="password" required minlength="4"
+                            class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                   placeholder-gray-500 transition" placeholder="Min 4 characters">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Confirm Password</label>
+                        <input type="password" name="password_confirm" id="password_confirm" required minlength="4"
+                            class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                   placeholder-gray-500 transition" placeholder="Repeat password">
+                    </div>
+                    <div id="account-error" class="hidden bg-red-900/40 border border-red-700 text-red-300 px-4 py-3 rounded-lg text-sm"></div>
+                    <button type="submit" id="create-btn"
+                        class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold
+                               rounded-lg transition-all duration-200 shadow-lg shadow-indigo-600/20
+                               focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+                               focus:ring-offset-gray-900">
+                        Create Account & Continue
+                    </button>
+                </form>
+            </div>
+
+            <!-- ═══ STEP 2: Connect Broker ═══ -->
+            <div id="step-2" class="step-panel hidden">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-white">Connect Your Broker</h2>
+                    <p class="text-gray-400 text-sm mt-1">Arrissa connects to TradeLocker-powered brokers for market data and trading.</p>
+                </div>
+
+                <div class="bg-indigo-900/20 border border-indigo-800/30 rounded-xl p-4 mb-6">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div class="text-sm text-gray-300">
+                            <p class="font-semibold text-white mb-1">Need a broker account?</p>
+                            <p>Open a <strong class="text-white">FREE demo account</strong> at HeroFX — choose <strong class="text-white">TradeLocker</strong> as your platform:</p>
+                            <a href="https://herofx.co/?partner_code=8138744" target="_blank"
+                               class="inline-flex items-center gap-1.5 mt-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                Open HeroFX Demo Account
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="broker-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">TradeLocker Email</label>
+                        <input type="email" name="broker_email" id="broker_email" required
+                            class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                   placeholder-gray-500 transition" placeholder="your@broker-email.com">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">TradeLocker Password</label>
+                        <input type="password" name="broker_password" id="broker_password" required
+                            class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                   placeholder-gray-500 transition" placeholder="Your broker password">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Server</label>
+                        <input type="text" name="broker_server" id="broker_server" required
+                            class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                   placeholder-gray-500 transition" placeholder="OSP-DEMO" value="OSP-DEMO">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Environment</label>
+                        <select name="broker_env" id="broker_env"
+                            class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+                            <option value="demo">Demo</option>
+                            <option value="live">Live</option>
+                        </select>
+                    </div>
+                    <div id="broker-error" class="hidden bg-red-900/40 border border-red-700 text-red-300 px-4 py-3 rounded-lg text-sm"></div>
+                    <div id="broker-success" class="hidden bg-green-900/40 border border-green-700 text-green-300 px-4 py-3 rounded-lg text-sm"></div>
+                    <div class="flex gap-3">
+                        <button type="submit" id="broker-btn"
+                            class="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold
+                                   rounded-lg transition-all duration-200 shadow-lg shadow-indigo-600/20
+                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900">
+                            Connect Broker
+                        </button>
+                        <button type="button" onclick="goToStep(3)"
+                            class="px-6 py-2.5 bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold
+                                   rounded-lg transition">
+                            Skip for Now
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ═══ STEP 3: All Done ═══ -->
+            <div id="step-3" class="step-panel hidden">
+                <div class="text-center py-6">
+                    <div class="w-20 h-20 rounded-full bg-green-600/20 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2">You're All Set!</h2>
+                    <p class="text-gray-400 text-sm mb-6">Your account is ready. Here's your API key for MCP / AI integrations:</p>
+
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 mb-6">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Your API Key</p>
+                        <div class="flex items-center gap-2">
+                            <code id="api-key-display" class="text-sm font-mono text-indigo-400 break-all flex-1 text-left"></code>
+                            <button onclick="navigator.clipboard.writeText(document.getElementById('api-key-display').textContent).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)})"
+                                class="flex-shrink-0 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs rounded-lg transition">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-4 mb-6 text-left">
+                        <p class="text-sm text-gray-300">
+                            <strong class="text-white">What's next?</strong>
+                        </p>
+                        <ul class="text-sm text-gray-400 mt-2 space-y-1.5">
+                            <li class="flex items-start gap-2">
+                                <span class="text-indigo-400 mt-0.5">→</span>
+                                <span>Explore the <strong class="text-gray-200">Dashboard</strong> for account overview</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-indigo-400 mt-0.5">→</span>
+                                <span>Set up <strong class="text-gray-200">MCP Server</strong> to connect AI assistants (Claude, Copilot, Cursor)</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-indigo-400 mt-0.5">→</span>
+                                <span>Use the API docs to integrate with your own apps</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <a href="/dashboard"
+                        class="inline-flex items-center gap-2 py-3 px-8 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold
+                               rounded-lg transition-all duration-200 shadow-lg shadow-indigo-600/20">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                        Go to Dashboard
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <p class="text-center text-gray-600 text-xs mt-6">&copy; 2026 {{ app_name }}. All rights reserved.</p>
+    </div>
+</div>
+
+<script>
+let currentStep = 1;
+
+function goToStep(step) {
+    // Hide all
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.add('hidden'));
+    // Show target
+    document.getElementById('step-' + step).classList.remove('hidden');
+    // Update dots
+    for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById('step-dot-' + i);
+        if (i <= step) {
+            dot.classList.remove('bg-gray-700', 'text-gray-400');
+            dot.classList.add('bg-indigo-600', 'text-white');
+        } else {
+            dot.classList.remove('bg-indigo-600', 'text-white');
+            dot.classList.add('bg-gray-700', 'text-gray-400');
+        }
+    }
+    // Update lines
+    for (let i = 1; i <= 2; i++) {
+        const line = document.getElementById('step-line-' + i);
+        if (i < step) {
+            line.classList.remove('bg-gray-700');
+            line.classList.add('bg-indigo-600');
+        } else {
+            line.classList.remove('bg-indigo-600');
+            line.classList.add('bg-gray-700');
+        }
+    }
+    currentStep = step;
+}
+
+// Step 1: Create Account
+document.getElementById('account-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const errDiv = document.getElementById('account-error');
+    errDiv.classList.add('hidden');
+
+    const pw = document.getElementById('password').value;
+    const pwc = document.getElementById('password_confirm').value;
+    if (pw !== pwc) {
+        errDiv.textContent = 'Passwords do not match.';
+        errDiv.classList.remove('hidden');
+        return;
+    }
+    if (pw.length < 4) {
+        errDiv.textContent = 'Password must be at least 4 characters.';
+        errDiv.classList.remove('hidden');
+        return;
+    }
+
+    const btn = document.getElementById('create-btn');
+    btn.disabled = true;
+    btn.textContent = 'Creating…';
+
+    try {
+        const resp = await fetch('/setup/create-account', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                username: document.getElementById('username').value,
+                first_name: document.getElementById('first_name').value,
+                last_name: document.getElementById('last_name').value,
+                email: document.getElementById('email').value,
+                password: pw,
+            })
+        });
+        const data = await resp.json();
+        if (data.error) {
+            errDiv.textContent = data.error;
+            errDiv.classList.remove('hidden');
+            btn.disabled = false;
+            btn.textContent = 'Create Account & Continue';
+            return;
+        }
+        // Store API key for step 3
+        document.getElementById('api-key-display').textContent = data.api_key;
+        goToStep(2);
+    } catch (err) {
+        errDiv.textContent = 'Network error. Please try again.';
+        errDiv.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Create Account & Continue';
+    }
+});
+
+// Step 2: Connect Broker
+document.getElementById('broker-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const errDiv = document.getElementById('broker-error');
+    const sucDiv = document.getElementById('broker-success');
+    errDiv.classList.add('hidden');
+    sucDiv.classList.add('hidden');
+
+    const btn = document.getElementById('broker-btn');
+    btn.disabled = true;
+    btn.textContent = 'Connecting…';
+
+    try {
+        const resp = await fetch('/setup/connect-broker', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                email: document.getElementById('broker_email').value,
+                password: document.getElementById('broker_password').value,
+                server: document.getElementById('broker_server').value,
+                environment: document.getElementById('broker_env').value,
+            })
+        });
+        const data = await resp.json();
+        if (data.error) {
+            errDiv.textContent = data.error;
+            errDiv.classList.remove('hidden');
+            btn.disabled = false;
+            btn.textContent = 'Connect Broker';
+            return;
+        }
+        sucDiv.textContent = '✓ Connected! ' + (data.accounts_synced || 0) + ' trading account(s) synced.';
+        sucDiv.classList.remove('hidden');
+        btn.textContent = 'Connected!';
+        // Auto-advance after 2s
+        setTimeout(() => goToStep(3), 2000);
+    } catch (err) {
+        errDiv.textContent = 'Network error. Please try again.';
+        errDiv.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Connect Broker';
+    }
+});
+</script>
+{% endblock %}
