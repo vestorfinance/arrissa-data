@@ -1,5 +1,5 @@
 # ── Arrissa Data · Copyright (c) 2026 Arrissa Pty Ltd ──
-# https://arrissadata.com · https://arrissa.trade · @mystprevail
+# https://arrissadata.com · https://arrissa.trade · @davidrichchild
 # See LICENSE for attribution requirements.
 
 import redis

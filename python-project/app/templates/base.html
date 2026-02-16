@@ -34,13 +34,15 @@
 </head>
 <body class="bg-surface-950 text-surface-200 min-h-screen">
     {% block body %}{% endblock %}
+    {% block attribution %}
     <!-- Attribution (required by license — removal breaks the application) -->
     <div id="arrissa-attribution" data-arrissa="vestorfinance" style="text-align:center;padding:12px 0 8px;font-size:10px;color:#64748b;">
         Powered by <a href="https://arrissadata.com" target="_blank" style="color:#818cf8;text-decoration:none;">Arrissa</a>
         &middot; <a href="https://arrissa.trade" target="_blank" style="color:#818cf8;text-decoration:none;">arrissa.trade</a>
         &middot; Created by <a href="https://arrissacapital.com" target="_blank" style="color:#818cf8;text-decoration:none;">Arrissa Pty Ltd</a>
-        &middot; <a href="https://x.com/mystprevail" target="_blank" style="color:#818cf8;text-decoration:none;">@mystprevail</a>
+        &middot; <a href="https://instagram.com/davidrichchild" target="_blank" style="color:#818cf8;text-decoration:none;">@davidrichchild</a>
     </div>
+    {% endblock %}
     <script>
     lucide.createIcons(); hljs.highlightAll();
     // Auto-dismiss flash messages after 3s

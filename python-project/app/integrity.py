@@ -1,7 +1,7 @@
 # ──────────────────────────────────────────────────────────────────────
 #  Arrissa Data — License & Attribution Integrity
 #  Copyright (c) 2026 Arrissa Pty Ltd · https://arrissadata.com
-#  Author: @mystprevail · https://arrissa.trade · https://arrissacapital.com
+#  Author: @davidrichchild · https://arrissa.trade · https://arrissacapital.com
 #
 #  This module verifies that required attribution remains intact in
 #  the UI templates as mandated by the LICENSE file. Removal of
@@ -21,7 +21,7 @@ _SIG = [
         "arrissadata.com",
         "arrissa.trade",
         "arrissacapital.com",
-        "mystprevail",
+        "davidrichchild",
         "Arrissa Pty Ltd",
         "data-arrissa",
     ]),
@@ -29,7 +29,7 @@ _SIG = [
         "arrissadata.com",
         "arrissa.trade",
         "arrissacapital.com",
-        "mystprevail",
+        "davidrichchild",
         "arrissa-attribution",
         "data-arrissa",
     ]),
@@ -38,7 +38,7 @@ _SIG = [
 # Compact digest of the attribution block for fast re-verification
 _EXPECTED_MARKS = {
     _hl.md5(b"arrissadata.com").hexdigest(),
-    _hl.md5(b"mystprevail").hexdigest(),
+    _hl.md5(b"davidrichchild").hexdigest(),
     _hl.md5(b"arrissa.trade").hexdigest(),
     _hl.md5(b"Arrissa Pty Ltd").hexdigest(),
     _hl.md5(b"arrissacapital.com").hexdigest(),
