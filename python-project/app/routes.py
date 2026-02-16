@@ -1,5 +1,6 @@
 from datetime import datetime, timezone, timedelta
 from functools import wraps
+import subprocess, os, json
 
 from flask import Flask, request, jsonify, render_template, redirect, session, url_for, send_file
 
@@ -448,6 +449,122 @@ def login():
 def install_guide():
     """Public VPS installation guide with generated commands."""
     return render_template("install_guide.html", app_name=APP_NAME)
+
+
+# ─── Update Check ────────────────────────────────────────────────────────────
+
+GITHUB_REPO = "vestorfinance/arrissa-data"
+_update_cache = {"data": None, "checked_at": None}
+
+
+def _get_local_commit():
+    """Get the current local git commit hash."""
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=repo_root, capture_output=True, text=True, timeout=5
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except Exception:
+        pass
+    # Fallback: read .git/HEAD
+    git_head = os.path.join(repo_root, ".git", "HEAD")
+    try:
+        with open(git_head) as f:
+            ref = f.read().strip()
+        if ref.startswith("ref: "):
+            ref_path = os.path.join(repo_root, ".git", ref[5:])
+            with open(ref_path) as f:
+                return f.read().strip()
+        return ref
+    except Exception:
+        return None
+
+
+@app.route("/api/check-update")
+@login_required
+def check_update():
+    """Check GitHub for newer commits. Cached for 15 minutes."""
+    import requests as _requests
+
+    now = datetime.now(timezone.utc)
+
+    # Return cache if fresh (< 15 min)
+    if (_update_cache["data"] is not None
+            and _update_cache["checked_at"]
+            and (now - _update_cache["checked_at"]).total_seconds() < 900):
+        return jsonify(_update_cache["data"])
+
+    local_sha = _get_local_commit()
+    if not local_sha:
+        return jsonify({"update_available": False, "error": "Cannot determine local version"})
+
+    try:
+        # Get latest commit on main
+        resp = _requests.get(
+            f"https://api.github.com/repos/{GITHUB_REPO}/commits/main",
+            headers={"Accept": "application/vnd.github.v3+json"},
+            timeout=10
+        )
+        if resp.status_code != 200:
+            return jsonify({"update_available": False, "error": f"GitHub API error {resp.status_code}"})
+
+        remote_data = resp.json()
+        remote_sha = remote_data["sha"]
+
+        if remote_sha == local_sha or remote_sha.startswith(local_sha) or local_sha.startswith(remote_sha):
+            result = {"update_available": False, "current_version": local_sha[:7]}
+            _update_cache["data"] = result
+            _update_cache["checked_at"] = now
+            return jsonify(result)
+
+        # Get comparison to find commits between local and remote
+        commits = []
+        try:
+            compare_resp = _requests.get(
+                f"https://api.github.com/repos/{GITHUB_REPO}/compare/{local_sha[:12]}...main",
+                headers={"Accept": "application/vnd.github.v3+json"},
+                timeout=10
+            )
+            if compare_resp.status_code == 200:
+                compare_data = compare_resp.json()
+                for c in compare_data.get("commits", [])[:15]:
+                    commits.append({
+                        "sha": c["sha"][:7],
+                        "message": c["commit"]["message"].split("\n")[0],
+                        "date": c["commit"]["committer"]["date"],
+                        "author": c["commit"]["committer"].get("name", ""),
+                    })
+        except Exception:
+            # Fallback: just show the latest commit
+            commits = [{
+                "sha": remote_sha[:7],
+                "message": remote_data["commit"]["message"].split("\n")[0],
+                "date": remote_data["commit"]["committer"]["date"],
+                "author": remote_data["commit"]["committer"].get("name", ""),
+            }]
+
+        result = {
+            "update_available": True,
+            "current_version": local_sha[:7],
+            "latest_version": remote_sha[:7],
+            "commits_behind": len(commits),
+            "changelog": commits,
+            "update_commands": (
+                "cd /root/arrissa-data && git pull origin main && "
+                "cd python-project && source .venv/bin/activate && "
+                "pip install -r requirements.txt && "
+                "sudo systemctl restart arrissa-data arrissa-mcp"
+            ),
+        }
+        _update_cache["data"] = result
+        _update_cache["checked_at"] = now
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({"update_available": False, "error": str(e)})
 
 
 # ─── First-Run Setup Wizard ──────────────────────────────────────────────────
