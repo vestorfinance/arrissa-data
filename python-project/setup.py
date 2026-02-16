@@ -19,7 +19,7 @@ from app.database import engine, Base, SessionLocal
 from app.models.user import User
 from app.models.tradelocker import TradeLockerCredential, TradeLockerAccount
 from app.models.economic_event import EconomicEvent
-from app.models.asp_tool import ASPTool
+from app.models.tmp_tool import TMPTool
 
 HERO_FX_LINK = "https://herofx.co/?partner_code=8138744"
 

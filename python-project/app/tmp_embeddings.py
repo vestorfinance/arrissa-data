@@ -1,5 +1,5 @@
 """
-ASP Embedding Engine — FAISS-powered vector search for smart tool discovery.
+TMP Embedding Engine — FAISS-powered vector search for smart tool discovery.
 
 Uses FAISS (Facebook AI Similarity Search) as the vector database for fast,
 accurate nearest-neighbor search over tool embeddings.
@@ -21,14 +21,14 @@ import numpy as np
 import faiss
 from typing import Optional
 
-log = logging.getLogger("asp-embeddings")
+log = logging.getLogger("tmp-embeddings")
 
 # ─── Configuration ───────────────────────────────────────────────────────────
 
-EMBEDDING_PROVIDER = os.environ.get("ASP_EMBEDDING_PROVIDER", "local")
+EMBEDDING_PROVIDER = os.environ.get("TMP_EMBEDDING_PROVIDER", "local")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
-OPENAI_EMBEDDING_MODEL = os.environ.get("ASP_OPENAI_MODEL", "text-embedding-3-small")
-LOCAL_MODEL_NAME = os.environ.get("ASP_LOCAL_MODEL", "all-MiniLM-L6-v2")
+OPENAI_EMBEDDING_MODEL = os.environ.get("TMP_OPENAI_MODEL", "text-embedding-3-small")
+LOCAL_MODEL_NAME = os.environ.get("TMP_LOCAL_MODEL", "all-MiniLM-L6-v2")
 
 # ─── Local Model Cache ──────────────────────────────────────────────────────
 
@@ -48,7 +48,7 @@ def _get_local_model():
             raise RuntimeError(
                 "sentence-transformers not installed. "
                 "Run: pip install sentence-transformers\n"
-                "Or set ASP_EMBEDDING_PROVIDER=openai and provide OPENAI_API_KEY"
+                "Or set TMP_EMBEDDING_PROVIDER=openai and provide OPENAI_API_KEY"
             )
     return _local_model
 
@@ -197,11 +197,11 @@ def rebuild_faiss_index():
     """Rebuild the FAISS index from the database."""
     global _faiss_index
     from app.database import SessionLocal
-    from app.models.asp_tool import ASPTool
+    from app.models.tmp_tool import TMPTool
 
     db = SessionLocal()
     try:
-        tools = db.query(ASPTool).all()
+        tools = db.query(TMPTool).all()
         tool_dicts = []
         for t in tools:
             tool_dicts.append({

@@ -13,7 +13,7 @@ from app.database import engine, Base
 from app.models.user import User  # noqa: F401
 from app.models.tradelocker import TradeLockerCredential, TradeLockerAccount  # noqa: F401
 from app.models.economic_event import EconomicEvent  # noqa: F401
-from app.models.asp_tool import ASPTool  # noqa: F401
+from app.models.tmp_tool import TMPTool  # noqa: F401
 from app.routes import app
 from app.smart_updater import smart_updater
 

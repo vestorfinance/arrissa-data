@@ -12,7 +12,7 @@
             <!-- Logo -->
             <a href="/dashboard" class="flex items-center gap-3 flex-shrink-0">
                 <div class="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 7000 7000" xmlns="http://www.w3.org/2000/svg">
+                    <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 7000 7000" xmlns="http://www.w3.org/2000/svg">
                         <g>
                             <path d="M3534.57 2921.26l509.33 278.51 0 600.85 -543.85 297.38 -543.84 -297.38 0 -600.85 543.84 -297.38 34.51 18.87zm166.69 255.62l-201.2 -110.02 -399.01 218.18 0 430.3 399.01 218.19 399.01 -218.19 0 -430.3 -197.81 -108.16z"/>
                             <path d="M3206.76 1423.91l672.75 0 0 1366.1 -745.17 0 0 -1366.1 72.42 0zm527.92 144.83l-455.5 0 0 1076.43 455.5 0 0 -1076.43z"/>
@@ -90,7 +90,7 @@
                 <div class="relative" id="tools-dropdown">
                     <button onclick="toggleToolsDropdown()" type="button"
                         class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200
-                               {% if active_page in ['mcp_server','asp_guide','install'] %}bg-brand-600 text-white shadow-md shadow-brand-600/25{% else %}text-surface-300 hover:bg-surface-800 hover:text-white{% endif %}">
+                               {% if active_page in ['mcp_server','tmp_guide','install'] %}bg-brand-600 text-white shadow-md shadow-brand-600/25{% else %}text-surface-300 hover:bg-surface-800 hover:text-white{% endif %}">
                         <i data-lucide="wrench" class="w-3.5 h-3.5"></i>
                         <span>Tools</span>
                         <i data-lucide="chevron-down" class="w-3 h-3 ml-0.5"></i>
@@ -98,7 +98,7 @@
                     <div id="tools-dropdown-menu" class="hidden absolute top-full left-0 mt-2 w-48 bg-surface-850 border border-surface-700 rounded-xl shadow-2xl py-2 z-50">
                         {% set tool_items = [
                             ('mcp_server', '/mcp-server', 'cpu', 'MCP Server'),
-                            ('asp_guide', '/asp-guide', 'search', 'ASP Protocol'),
+                            ('tmp_guide', '/tmp-guide', 'search', 'TMP Protocol'),
                             ('install', '/install', 'download', 'Install Guide'),
                         ] %}
                         {% for page, href, icon, label in tool_items %}
@@ -159,7 +159,7 @@
                     ('event_ids', '/event-ids', 'hash', 'Event ID Reference'),
                     ('scrape_api', '/scrape-api', 'globe', 'Scrape API'),
                     ('mcp_server', '/mcp-server', 'cpu', 'MCP Server'),
-                    ('asp_guide', '/asp-guide', 'search', 'ASP Protocol'),
+                    ('tmp_guide', '/tmp-guide', 'search', 'TMP Protocol'),
                     ('install', '/install', 'download', 'Install Guide'),
                     ('settings', '/settings', 'settings', 'Settings'),
                 ] %}

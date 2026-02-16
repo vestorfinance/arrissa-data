@@ -1,10 +1,10 @@
 """
-ASP Tool Seeder — Indexes all Arrissa API tools into the ASP registry.
+TMP Tool Seeder — Indexes all Arrissa API tools into the TMP registry.
 
 This script reads the tool definitions (from the MCP server's tool registry)
-and seeds them into the ASP database with precomputed embeddings.
+and seeds them into the TMP database with precomputed embeddings.
 
-Run:  python asp_seed_tools.py
+Run:  python tmp_seed_tools.py
 """
 
 import sys
@@ -14,8 +14,8 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app.database import engine, Base, SessionLocal
-from app.models.asp_tool import ASPTool
-from app.asp_embeddings import compute_embeddings_batch, build_tool_embedding_text, rebuild_faiss_index
+from app.models.tmp_tool import TMPTool
+from app.tmp_embeddings import compute_embeddings_batch, build_tool_embedding_text, rebuild_faiss_index
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -442,11 +442,11 @@ ARRISSA_TOOLS = [
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def seed_tools():
-    """Seed all Arrissa tools into the ASP registry with embeddings."""
+    """Seed all Arrissa tools into the TMP registry with embeddings."""
     # Ensure table exists
     Base.metadata.create_all(bind=engine)
 
-    print(f"Seeding {len(ARRISSA_TOOLS)} tools into ASP registry...")
+    print(f"Seeding {len(ARRISSA_TOOLS)} tools into TMP registry...")
 
     # Build embedding texts
     texts = []
@@ -470,7 +470,7 @@ def seed_tools():
     db = SessionLocal()
     try:
         for i, tool in enumerate(ARRISSA_TOOLS):
-            existing = db.query(ASPTool).filter(ASPTool.name == tool["name"]).first()
+            existing = db.query(TMPTool).filter(TMPTool.name == tool["name"]).first()
 
             if existing:
                 existing.description = tool["description"]
@@ -484,7 +484,7 @@ def seed_tools():
                 existing.embedding_text = texts[i]
                 print(f"  Updated: {tool['name']}")
             else:
-                new_tool = ASPTool(
+                new_tool = TMPTool(
                     name=tool["name"],
                     description=tool["description"],
                     parameters=tool.get("parameters"),
@@ -500,13 +500,13 @@ def seed_tools():
                 print(f"  Added: {tool['name']}")
 
         db.commit()
-        print(f"\nDone! {len(ARRISSA_TOOLS)} tools seeded into ASP registry.")
+        print(f"\nDone! {len(ARRISSA_TOOLS)} tools seeded into TMP registry.")
 
         # Build FAISS index from all seeded tools
         print("Building FAISS vector index...")
         idx = rebuild_faiss_index()
         print(f"FAISS index built: {idx.tool_count} tools → {idx.total_vectors} vectors")
-        print("ASP is ready to serve tool discovery requests at /asp/search")
+        print("TMP is ready to serve tool discovery requests at /tmp/search")
 
     except Exception as e:
         db.rollback()

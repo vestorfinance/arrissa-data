@@ -1,5 +1,5 @@
 """
-ASP (Agent Server Protocol) — Tool Registry Model
+TMP (Tool Matching Protocol) — Tool Registry Model
 
 Stores tool definitions with their embedding vectors for semantic search.
 Completely separate from MCP — this is a new protocol.
@@ -11,8 +11,8 @@ from datetime import datetime, timezone
 from app.database import Base
 
 
-class ASPTool(Base):
-    """A registered tool in the Agent Server Protocol registry."""
+class TMPTool(Base):
+    """A registered tool in the Tool Matching Protocol registry."""
     __tablename__ = "asp_tools"
 
     id = Column(Integer, primary_key=True, autoincrement=True)

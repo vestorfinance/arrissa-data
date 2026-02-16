@@ -1,26 +1,26 @@
 """
-ASP (Agent Server Protocol) — HTTP Routes
+TMP (Tool Matching Protocol) — HTTP Routes
 
 This is a completely separate protocol from MCP.
 Agents send HTTP requests describing what they want to do,
-and ASP returns the most relevant tools ranked by semantic similarity.
+and TMP returns the most relevant tools ranked by semantic similarity.
 
 Endpoints:
-  POST /asp/search          — Search for tools by natural language query
-  GET  /asp/tools           — List all registered tools
-  POST /asp/tools           — Register a new tool
-  PUT  /asp/tools/<name>    — Update a tool
-  DELETE /asp/tools/<name>  — Delete a tool
-  POST /asp/reindex         — Recompute all embeddings
-  GET  /asp/status          — ASP system status
+  POST /tmp/search          — Search for tools by natural language query
+  GET  /tmp/tools           — List all registered tools
+  POST /tmp/tools           — Register a new tool
+  PUT  /tmp/tools/<name>    — Update a tool
+  DELETE /tmp/tools/<name>  — Delete a tool
+  POST /tmp/reindex         — Recompute all embeddings
+  GET  /tmp/status          — TMP system status
 """
 
 import logging
 from flask import Blueprint, request, jsonify, g
 
 from app.database import SessionLocal
-from app.models.asp_tool import ASPTool
-from app.asp_embeddings import (
+from app.models.tmp_tool import TMPTool
+from app.tmp_embeddings import (
     compute_embedding,
     compute_embeddings_batch,
     build_tool_embedding_text,
@@ -29,9 +29,9 @@ from app.asp_embeddings import (
     rebuild_faiss_index,
 )
 
-log = logging.getLogger("asp-server")
+log = logging.getLogger("tmp-server")
 
-asp_bp = Blueprint("asp", __name__, url_prefix="/asp")
+tmp_bp = Blueprint("tmp", __name__, url_prefix="/tmp")
 
 
 # ─── Helper ──────────────────────────────────────────────────────────────────
@@ -49,35 +49,30 @@ def _resolve_api_key():
     if not key:
         # Also check JSON body for convenience
         if request.is_json:
-            key = (request.get_json(silent=True) or {}).get("api_key")
+            body = request.get_json(silent=True) or {}
+            key = body.get("api_key")
+
     if not key:
-        return None, None, (jsonify({"error": "Unauthorized — missing API key. Send X-API-Key header or ?api_key= param."}), 401)
-    if key == API_KEY:
-        # Internal master key — resolve first user's account
-        db = _get_db()
-        try:
-            user = db.query(User).first()
-            user_id = user.id if user else None
-        finally:
-            db.close()
-        return key, user_id, None
+        return None, None, (jsonify({"error": "Missing API key. Send X-API-Key header or ?api_key= param."}), 401)
+
+    # Validate key → find user
     db = _get_db()
     try:
         user = db.query(User).filter(User.api_key == key).first()
         if not user:
-            return None, None, (jsonify({"error": "Unauthorized — invalid API key"}), 401)
+            return None, None, (jsonify({"error": "Invalid API key."}), 401)
         return key, user.id, None
     finally:
         db.close()
 
 
-def _get_connection_context() -> dict:
-    """Build connection context (base_url, api_key, arrissa_account_id) for ASP responses."""
+def _get_connection_context():
+    """Build connection context (base_url, api_key, arrissa_account_id) for TMP responses."""
     from app.models.tradelocker import TradeLockerAccount
     from app.models.user import User
 
-    api_key = getattr(g, "asp_api_key", None)
-    user_id = getattr(g, "asp_user_id", None)
+    api_key = getattr(g, "tmp_api_key", None)
+    user_id = getattr(g, "tmp_user_id", None)
     base_url = request.host_url.rstrip("/")
 
     # Resolve account: user's default_account_id first, then fall back to first account
@@ -104,23 +99,23 @@ def _get_connection_context() -> dict:
     }
 
 
-@asp_bp.before_request
-def _asp_require_api_key():
-    """Protect ALL ASP endpoints with API key authentication."""
+@tmp_bp.before_request
+def _tmp_require_api_key():
+    """Protect ALL TMP endpoints with API key authentication."""
     key, user_id, error = _resolve_api_key()
     if error:
         return error
-    g.asp_api_key = key
-    g.asp_user_id = user_id
+    g.tmp_api_key = key
+    g.tmp_user_id = user_id
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SEARCH — The core ASP endpoint
+# SEARCH — The core TMP endpoint
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-@asp_bp.route("/search", methods=["POST", "GET"])
-def asp_search():
+@tmp_bp.route("/search", methods=["POST", "GET"])
+def tmp_search():
     """
     Search for the most relevant tools based on a natural language query.
 
@@ -166,7 +161,7 @@ def asp_search():
                 "query": query,
                 "tools": [],
                 "count": 0,
-                "message": "No tools registered yet. Use POST /asp/tools or /asp/reindex to add tools.",
+                "message": "No tools registered yet. Use POST /tmp/tools or /tmp/reindex to add tools.",
                 "provider": get_provider_info()["provider"],
             })
 
@@ -213,7 +208,7 @@ def asp_search():
         })
 
     except Exception as e:
-        log.exception("ASP search error")
+        log.exception("TMP search error")
         return jsonify({"error": str(e)}), 500
 
 
@@ -222,18 +217,18 @@ def asp_search():
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-@asp_bp.route("/tools", methods=["GET"])
-def asp_list_tools():
-    """List all registered ASP tools."""
+@tmp_bp.route("/tools", methods=["GET"])
+def tmp_list_tools():
+    """List all registered TMP tools."""
     category = request.args.get("category")
     search = request.args.get("search", "").strip()
 
     db = _get_db()
     try:
-        q = db.query(ASPTool)
+        q = db.query(TMPTool)
         if category:
-            q = q.filter(ASPTool.category.ilike(category))
-        tools = q.order_by(ASPTool.name).all()
+            q = q.filter(TMPTool.category.ilike(category))
+        tools = q.order_by(TMPTool.name).all()
 
         results = []
         for t in tools:
@@ -253,10 +248,10 @@ def asp_list_tools():
         db.close()
 
 
-@asp_bp.route("/tools", methods=["POST"])
-def asp_register_tool():
+@tmp_bp.route("/tools", methods=["POST"])
+def tmp_register_tool():
     """
-    Register a new tool in the ASP registry.
+    Register a new tool in the TMP registry.
 
     JSON body:
       name (required): Tool name
@@ -283,7 +278,7 @@ def asp_register_tool():
 
     db = _get_db()
     try:
-        existing = db.query(ASPTool).filter(ASPTool.name.ilike(name)).first()
+        existing = db.query(TMPTool).filter(TMPTool.name.ilike(name)).first()
         if existing:
             return jsonify({"error": f"Tool '{name}' already exists. Use PUT to update."}), 409
 
@@ -305,7 +300,7 @@ def asp_register_tool():
             except Exception as e:
                 log.warning(f"Failed to compute embedding for {name}: {e}")
 
-        tool = ASPTool(
+        tool = TMPTool(
             name=name,
             description=description,
             parameters=data.get("parameters"),
@@ -336,8 +331,8 @@ def asp_register_tool():
         db.close()
 
 
-@asp_bp.route("/tools/<name>", methods=["PUT"])
-def asp_update_tool(name: str):
+@tmp_bp.route("/tools/<name>", methods=["PUT"])
+def tmp_update_tool(name: str):
     """Update an existing tool's definition and re-embed."""
     data = request.get_json()
     if not data:
@@ -345,7 +340,7 @@ def asp_update_tool(name: str):
 
     db = _get_db()
     try:
-        tool = db.query(ASPTool).filter(ASPTool.name.ilike(name)).first()
+        tool = db.query(TMPTool).filter(TMPTool.name.ilike(name)).first()
         if not tool:
             return jsonify({"error": f"Tool '{name}' not found"}), 404
 
@@ -396,12 +391,12 @@ def asp_update_tool(name: str):
         db.close()
 
 
-@asp_bp.route("/tools/<name>", methods=["DELETE"])
-def asp_delete_tool(name: str):
+@tmp_bp.route("/tools/<name>", methods=["DELETE"])
+def tmp_delete_tool(name: str):
     """Delete a tool from the registry."""
     db = _get_db()
     try:
-        tool = db.query(ASPTool).filter(ASPTool.name.ilike(name)).first()
+        tool = db.query(TMPTool).filter(TMPTool.name.ilike(name)).first()
         if not tool:
             return jsonify({"error": f"Tool '{name}' not found"}), 404
 
@@ -424,13 +419,13 @@ def asp_delete_tool(name: str):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-@asp_bp.route("/tools/batch", methods=["POST"])
-def asp_register_batch():
+@tmp_bp.route("/tools/batch", methods=["POST"])
+def tmp_register_batch():
     """
     Register multiple tools at once.
 
     JSON body:
-      tools: list of tool objects (same format as POST /asp/tools)
+      tools: list of tool objects (same format as POST /tmp/tools)
 
     Returns summary of registered tools.
     """
@@ -478,7 +473,7 @@ def asp_register_batch():
         for i, (td, embedding_text) in enumerate(valid_tools):
             name = td["name"].strip()
 
-            existing = db.query(ASPTool).filter(ASPTool.name.ilike(name)).first()
+            existing = db.query(TMPTool).filter(TMPTool.name.ilike(name)).first()
             if existing:
                 # Update existing
                 existing.description = td.get("description", existing.description)
@@ -493,7 +488,7 @@ def asp_register_batch():
                     existing.embedding = embeddings[i]
                 registered += 1
             else:
-                tool = ASPTool(
+                tool = TMPTool(
                     name=name,
                     description=td.get("description", ""),
                     parameters=td.get("parameters"),
@@ -526,15 +521,15 @@ def asp_register_batch():
         db.close()
 
 
-@asp_bp.route("/reindex", methods=["POST"])
-def asp_reindex():
+@tmp_bp.route("/reindex", methods=["POST"])
+def tmp_reindex():
     """
     Recompute embeddings for all registered tools.
     Use after changing the embedding provider or when embeddings are stale.
     """
     db = _get_db()
     try:
-        tools = db.query(ASPTool).all()
+        tools = db.query(TMPTool).all()
         if not tools:
             return jsonify({"message": "No tools to reindex", "count": 0})
 
@@ -583,18 +578,18 @@ def asp_reindex():
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-@asp_bp.route("/status", methods=["GET"])
-def asp_status():
-    """ASP system status — tool count, embedding info, health."""
+@tmp_bp.route("/status", methods=["GET"])
+def tmp_status():
+    """TMP system status — tool count, embedding info, health."""
     db = _get_db()
     try:
-        total = db.query(ASPTool).count()
-        embedded = db.query(ASPTool).filter(ASPTool.embedding.isnot(None)).count()
-        categories = db.query(ASPTool.category).distinct().all()
+        total = db.query(TMPTool).count()
+        embedded = db.query(TMPTool).filter(TMPTool.embedding.isnot(None)).count()
+        categories = db.query(TMPTool.category).distinct().all()
         cat_list = [c[0] for c in categories if c[0]]
 
         return jsonify({
-            "protocol": "ASP (Agent Server Protocol)",
+            "protocol": "TMP (Tool Matching Protocol)",
             "version": "1.0",
             "status": "active",
             "tools": {
@@ -606,14 +601,14 @@ def asp_status():
             "embedding": get_provider_info(),
             "connection": _get_connection_context(),
             "endpoints": {
-                "search": "POST /asp/search",
-                "list_tools": "GET /asp/tools",
-                "register_tool": "POST /asp/tools",
-                "register_batch": "POST /asp/tools/batch",
-                "update_tool": "PUT /asp/tools/<name>",
-                "delete_tool": "DELETE /asp/tools/<name>",
-                "reindex": "POST /asp/reindex",
-                "status": "GET /asp/status",
+                "search": "POST /tmp/search",
+                "list_tools": "GET /tmp/tools",
+                "register_tool": "POST /tmp/tools",
+                "register_batch": "POST /tmp/tools/batch",
+                "update_tool": "PUT /tmp/tools/<name>",
+                "delete_tool": "DELETE /tmp/tools/<name>",
+                "reindex": "POST /tmp/reindex",
+                "status": "GET /tmp/status",
             },
         })
     finally:

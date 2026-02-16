@@ -43,9 +43,9 @@ app = Flask(__name__)
 app.secret_key = API_KEY
 app.jinja_env.globals["app_name"] = APP_NAME
 
-# Register ASP (Agent Server Protocol) blueprint
-from app.asp_routes import asp_bp
-app.register_blueprint(asp_bp)
+# Register TMP (Tool Matching Protocol) blueprint
+from app.tmp_routes import tmp_bp
+app.register_blueprint(tmp_bp)
 
 # ── Attribution integrity check (periodic, every 50 requests) ──
 from app.integrity import quick_check as _integrity_ok
@@ -3543,9 +3543,9 @@ def mcp_server_guide():
         db.close()
 
 
-@app.route("/asp-guide")
-def asp_guide_page():
-    """ASP (Agent Server Protocol) documentation page."""
+@app.route("/tmp-guide")
+def tmp_guide_page():
+    """TMP (Tool Matching Protocol) documentation page."""
     if "user_id" not in session:
         return redirect(url_for("login_page"))
     db = get_db()
@@ -3553,10 +3553,10 @@ def asp_guide_page():
         user = db.query(User).filter(User.id == session["user_id"]).first()
         site_url = (user.site_url or "http://localhost:5001").rstrip("/")
         return render_template(
-            "asp_guide.html",
+            "tmp_guide.html",
             user=user,
             api_key=user.api_key,
-            active_page="asp_guide",
+            active_page="tmp_guide",
             app_name=APP_NAME,
             site_url=site_url,
         )

@@ -2,7 +2,7 @@
 import sys
 sys.path.insert(0, '.')
 
-from app.asp_embeddings import compute_embedding, cosine_similarity, build_tool_embedding_text
+from app.tmp_embeddings import compute_embedding, cosine_similarity, build_tool_embedding_text
 
 queries = [
     "buy bitcoin",
