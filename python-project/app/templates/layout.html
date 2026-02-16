@@ -1,186 +1,202 @@
 {% extends "base.html" %}
 {% block body %}
-<div class="flex min-h-screen">
+<div class="min-h-screen flex flex-col">
 
-    <!-- Mobile overlay -->
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-30 hidden lg:hidden" onclick="toggleSidebar()"></div>
+    <!-- Mobile menu overlay -->
+    <div id="mobile-overlay" class="fixed inset-0 bg-black/60 z-30 hidden" onclick="toggleMobileMenu()"></div>
 
-    <!-- Sidebar -->
-    <aside id="sidebar" class="w-64 bg-surface-900 border-r border-surface-800 flex flex-col fixed h-full z-40
-                               transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
-        <!-- Logo -->
-        <div class="px-6 border-b border-surface-800 flex-shrink-0" style="padding-top: 1.2rem; padding-bottom: 1.2rem;">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center">
-                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-white"></i>
-                    </div>
-                    <span class="text-xl font-bold text-white tracking-tight">{{ app_name }}</span>
+    <!-- ═══ Top Navbar ═══ -->
+    <header class="sticky top-0 z-40 bg-surface-900 border-b border-surface-800">
+        <!-- Primary bar: logo, user, hamburger -->
+        <div class="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
+            <!-- Logo -->
+            <a href="/dashboard" class="flex items-center gap-3 flex-shrink-0">
+                <div class="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 7000 7000" xmlns="http://www.w3.org/2000/svg">
+                        <g>
+                            <path d="M3534.57 2921.26l509.33 278.51 0 600.85 -543.85 297.38 -543.84 -297.38 0 -600.85 543.84 -297.38 34.51 18.87zm166.69 255.62l-201.2 -110.02 -399.01 218.18 0 430.3 399.01 218.19 399.01 -218.19 0 -430.3 -197.81 -108.16z"/>
+                            <path d="M3206.76 1423.91l672.75 0 0 1366.1 -745.17 0 0 -1366.1 72.42 0zm527.92 144.83l-455.5 0 0 1076.43 455.5 0 0 -1076.43z"/>
+                            <polygon points="3436.12,1496.03 3436.12,899.79 3580.96,899.79 3580.96,1496.03"/>
+                            <polygon points="3432.32,3004.16 3432.32,2675.89 3577.15,2675.89 3577.15,3004.16"/>
+                            <path d="M3203.34 5576.08l672.75 0 0 -1366.09 -745.17 0 0 1366.09 72.42 0zm527.92 -144.83l-455.5 0 0 -1076.43 455.5 0 0 -1076.43z"/>
+                            <polygon points="3432.7,5503.96 3432.7,6100.2 3577.53,6100.2 3577.53,5503.96"/>
+                            <polygon points="3428.89,3986.69 3428.89,4314.95 3573.73,4314.95 3573.73,3986.69"/>
+                            <path d="M5172.55 4811.44l336.37 -582.62 -1183.07 -683.05 -372.59 645.33 1183.07 683.05 36.21 -62.72zm138.53 -529.61l-227.75 394.48 -932.21 -538.21 227.75 -394.48 932.21 538.21z"/>
+                            <polygon points="5224.77,4576.75 5741.13,4874.87 5813.54,4749.44 5297.19,4451.32"/>
+                            <polygon points="3908.87,3821.41 4193.16,3985.54 4265.57,3860.11 3981.29,3695.98"/>
+                            <path d="M5479.29 2714.84l-336.37 -582.62 -1183.07 683.05 372.58 645.33 1183.07 -683.05 -36.21 -62.71zm-389.39 -384.77l227.75 394.47 -932.21 538.21 -227.75 -394.47 932.21 -538.21z"/>
+                            <polygon points="5302.15,2552.27 5818.51,2254.15 5746.09,2128.72 5229.73,2426.84"/>
+                            <polygon points="3990.05,3314.2 4274.34,3150.07 4201.92,3024.64 3917.63,3188.77"/>
+                            <path d="M1829.86 4820.48l-336.38 -582.62 1183.07 -683.05 372.59 645.33 -1183.07 683.05 -36.21 -62.72zm-138.53 -529.61l227.75 394.47 932.21 -538.21 -227.75 -394.47 -932.21 538.21z"/>
+                            <polygon points="1777.64,4585.79 1261.28,4883.91 1188.87,4758.48 1705.22,4460.36"/>
+                            <polygon points="3093.54,3830.44 2809.25,3994.57 2736.83,3869.15 3021.12,3705.01"/>
+                            <path d="M1520.7 2723.73l336.38 -582.62 1183.07 683.05 -372.58 645.33 -1183.07 -683.05 36.21 -62.72zm389.39 -384.77l-227.75 394.47 932.21 538.22 227.75 -394.48 -932.21 -538.21z"/>
+                            <polygon points="1697.84,2561.16 1181.48,2263.04 1253.9,2137.61 1770.26,2435.73"/>
+                            <polygon points="3009.94,3323.09 2725.65,3158.96 2798.07,3033.53 3082.35,3197.66"/>
+                        </g>
+                    </svg>
                 </div>
-                <!-- Close button (mobile only) -->
-                <button onclick="toggleSidebar()" class="lg:hidden p-1 rounded-lg text-surface-400 hover:text-white hover:bg-surface-800 transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
+                <span class="text-lg font-bold text-white tracking-tight">{{ app_name }}</span>
+            </a>
+
+            <!-- Desktop nav links -->
+            <nav class="hidden xl:flex items-center gap-1 mx-6 flex-1 justify-center">
+                {% set nav_items = [
+                    ('dashboard', '/dashboard', 'layout-dashboard', 'Dashboard'),
+                    ('brokers', '/brokers', 'landmark', 'Brokers'),
+                ] %}
+                {% for page, href, icon, label in nav_items %}
+                <a href="{{ href }}"
+                   class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200
+                          {% if active_page == page %}bg-brand-600 text-white shadow-md shadow-brand-600/25{% else %}text-surface-300 hover:bg-surface-800 hover:text-white{% endif %}">
+                    <i data-lucide="{{ icon }}" class="w-3.5 h-3.5"></i>
+                    <span>{{ label }}</span>
+                </a>
+                {% endfor %}
+
+                <!-- API dropdown -->
+                <div class="relative" id="api-dropdown">
+                    <button onclick="toggleApiDropdown()" type="button"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200
+                               {% if active_page in ['instruments_api','account_details_api','order_api','trading_api','market_data_api','chart_image_api','news_api','event_ids','scrape_api'] %}bg-brand-600 text-white shadow-md shadow-brand-600/25{% else %}text-surface-300 hover:bg-surface-800 hover:text-white{% endif %}">
+                        <i data-lucide="code" class="w-3.5 h-3.5"></i>
+                        <span>APIs</span>
+                        <i data-lucide="chevron-down" class="w-3 h-3 ml-0.5"></i>
+                    </button>
+                    <div id="api-dropdown-menu" class="hidden absolute top-full left-0 mt-2 w-56 bg-surface-850 border border-surface-700 rounded-xl shadow-2xl py-2 z-50">
+                        {% set api_items = [
+                            ('instruments_api', '/instruments-api', 'file-code', 'Instruments'),
+                            ('account_details_api', '/account-details-api', 'user-circle', 'Account Details'),
+                            ('order_api', '/order-api', 'list-ordered', 'Orders'),
+                            ('trading_api', '/trading-api', 'arrow-left-right', 'Trading'),
+                            ('market_data_api', '/market-data-api', 'candlestick-chart', 'Market Data'),
+                            ('chart_image_api', '/chart-image-api', 'image', 'Chart Image'),
+                            ('news_api', '/news-api', 'newspaper', 'News'),
+                            ('event_ids', '/event-ids', 'hash', 'Event IDs'),
+                            ('scrape_api', '/scrape-api', 'globe', 'Scrape'),
+                        ] %}
+                        {% for page, href, icon, label in api_items %}
+                        <a href="{{ href }}"
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-150
+                                  {% if active_page == page %}bg-brand-600/20 text-brand-400{% else %}text-surface-300 hover:bg-surface-800 hover:text-white{% endif %}">
+                            <i data-lucide="{{ icon }}" class="w-4 h-4 flex-shrink-0"></i>
+                            <span>{{ label }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Tools dropdown -->
+                <div class="relative" id="tools-dropdown">
+                    <button onclick="toggleToolsDropdown()" type="button"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200
+                               {% if active_page in ['mcp_server','asp_guide','install'] %}bg-brand-600 text-white shadow-md shadow-brand-600/25{% else %}text-surface-300 hover:bg-surface-800 hover:text-white{% endif %}">
+                        <i data-lucide="wrench" class="w-3.5 h-3.5"></i>
+                        <span>Tools</span>
+                        <i data-lucide="chevron-down" class="w-3 h-3 ml-0.5"></i>
+                    </button>
+                    <div id="tools-dropdown-menu" class="hidden absolute top-full left-0 mt-2 w-48 bg-surface-850 border border-surface-700 rounded-xl shadow-2xl py-2 z-50">
+                        {% set tool_items = [
+                            ('mcp_server', '/mcp-server', 'cpu', 'MCP Server'),
+                            ('asp_guide', '/asp-guide', 'search', 'ASP Protocol'),
+                            ('install', '/install', 'download', 'Install Guide'),
+                        ] %}
+                        {% for page, href, icon, label in tool_items %}
+                        <a href="{{ href }}"
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-150
+                                  {% if active_page == page %}bg-brand-600/20 text-brand-400{% else %}text-surface-300 hover:bg-surface-800 hover:text-white{% endif %}">
+                            <i data-lucide="{{ icon }}" class="w-4 h-4 flex-shrink-0"></i>
+                            <span>{{ label }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <a href="/settings"
+                   class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200
+                          {% if active_page == 'settings' %}bg-brand-600 text-white shadow-md shadow-brand-600/25{% else %}text-surface-300 hover:bg-surface-800 hover:text-white{% endif %}">
+                    <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <!-- Right side: user + logout + hamburger -->
+            <div class="flex items-center gap-3">
+                <div class="hidden sm:flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-brand-600/20 flex items-center justify-center">
+                        <i data-lucide="user" class="w-4 h-4 text-brand-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-white leading-tight">{{ user.first_name }} {{ user.last_name }}</p>
+                        <p class="text-xs text-surface-400">{{ user.email }}</p>
+                    </div>
+                </div>
+                <a href="/logout"
+                   class="flex items-center gap-2 text-sm text-surface-400 hover:text-white border border-surface-700 hover:border-surface-400 px-3 py-2 rounded-lg transition-all duration-200">
+                    <i data-lucide="log-out" class="w-4 h-4 flex-shrink-0"></i>
+                    <span class="hidden sm:inline">Sign Out</span>
+                </a>
+                <!-- Hamburger (mobile/tablet) -->
+                <button onclick="toggleMobileMenu()" class="xl:hidden p-2 rounded-lg text-surface-400 hover:text-white hover:bg-surface-800 transition-colors">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
             </div>
         </div>
 
-        <!-- Nav (scrollable) -->
-        <nav class="flex-1 px-4 py-6 overflow-y-auto scrollbar-thin">
-            <p class="text-xs font-semibold text-surface-400 uppercase tracking-widest mb-4 px-3">Menu</p>
-
-            <a href="/dashboard"
-               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
-                      {% if active_page == 'dashboard' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
-                <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
-                <span>Dashboard</span>
-            </a>
-
-            <a href="/brokers"
-               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
-                      {% if active_page == 'brokers' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
-                <i data-lucide="landmark" class="w-5 h-5 flex-shrink-0"></i>
-                <span>Brokers</span>
-            </a>
-
-            <a href="/instruments-api"
-               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
-                      {% if active_page == 'instruments_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
-                <i data-lucide="file-code" class="w-5 h-5 flex-shrink-0"></i>
-                <span>Instruments API</span>
-            </a>
-
-            <a href="/account-details-api"
-               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
-                      {% if active_page == 'account_details_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
-                <i data-lucide="user-circle" class="w-5 h-5 flex-shrink-0"></i>
-                <span>Account Details API</span>
-            </a>
-
-            <a href="/order-api"
-               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
-                      {% if active_page == 'order_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
-                <i data-lucide="list-ordered" class="w-5 h-5 flex-shrink-0"></i>
-                <span>Order API</span>
-            </a>
-
-            <a href="/trading-api"
-               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
-                      {% if active_page == 'trading_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
-                <i data-lucide="arrow-left-right" class="w-5 h-5 flex-shrink-0"></i>
-                <span>Trading API</span>
-            </a>
-
-            <a href="/market-data-api"
-               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
-                      {% if active_page == 'market_data_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
-                <i data-lucide="candlestick-chart" class="w-5 h-5 flex-shrink-0"></i>
-                <span>Market Data API</span>
-            </a>
-
-            <a href="/chart-image-api"
-               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
-                      {% if active_page == 'chart_image_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
-                <i data-lucide="image" class="w-5 h-5 flex-shrink-0"></i>
-                <span>Chart Image API</span>
-            </a>
-
-            <a href="/news-api"
-               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
-                      {% if active_page == 'news_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
-                <i data-lucide="newspaper" class="w-5 h-5 flex-shrink-0"></i>
-                <span>News API</span>
-            </a>
-
-            <a href="/event-ids"
-               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
-                      {% if active_page == 'event_ids' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
-                <i data-lucide="hash" class="w-5 h-5 flex-shrink-0"></i>
-                <span>Event ID Reference</span>
-            </a>
-
-            <a href="/scrape-api"
-               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
-                      {% if active_page == 'scrape_api' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
-                <i data-lucide="globe" class="w-5 h-5 flex-shrink-0"></i>
-                <span>Scrape API</span>
-            </a>
-
-            <a href="/mcp-server"
-               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
-                      {% if active_page == 'mcp_server' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
-                <i data-lucide="cpu" class="w-5 h-5 flex-shrink-0"></i>
-                <span>MCP Server</span>
-            </a>
-
-            <a href="/asp-guide"
-               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
-                      {% if active_page == 'asp_guide' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
-                <i data-lucide="search" class="w-5 h-5 flex-shrink-0"></i>
-                <span>ASP Protocol</span>
-            </a>
-
-            <a href="/install"
-               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
-                      {% if active_page == 'install' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
-                <i data-lucide="download" class="w-5 h-5 flex-shrink-0"></i>
-                <span>Install Guide</span>
-            </a>
-
-            <a href="/settings"
-               class="flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 mb-2
-                      {% if active_page == 'settings' %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
-                <i data-lucide="settings" class="w-5 h-5 flex-shrink-0"></i>
-                <span>Settings</span>
-            </a>
-        </nav>
-
-        <!-- Sidebar footer — attribution required by license -->
-        <div class="px-4 py-5 border-t border-surface-800 flex-shrink-0" id="arrissa-credit">
-            <p class="text-xs text-surface-400 text-center">&copy; 2026 {{ app_name }} &middot; v1.0</p>
-            <p class="text-[10px] text-surface-500 text-center mt-1" data-arrissa="vestorfinance">
-                Powered by <a href="https://arrissadata.com" target="_blank" class="text-surface-400 hover:text-brand-400 transition">Arrissa</a>
-                &middot; <a href="https://arrissa.trade" target="_blank" class="text-surface-400 hover:text-brand-400 transition">arrissa.trade</a>
-            </p>
-            <p class="text-[10px] text-surface-500 text-center mt-0.5">
-                Created by <a href="https://arrissacapital.com" target="_blank" class="text-surface-400 hover:text-brand-400 transition">Arrissa Pty Ltd</a>
-                &middot; <a href="https://instagram.com/davidrichchild" target="_blank" class="text-surface-400 hover:text-brand-400 transition">@davidrichchild</a>
-            </p>
-        </div>
-    </aside>
-
-    <!-- Main content -->
-    <main class="flex-1 lg:ml-64">
-        <!-- Top bar -->
-        <header class="sticky top-0 z-20 bg-surface-950/80 backdrop-blur-md border-b border-surface-800">
-            <div class="flex items-center justify-between px-4 sm:px-6 lg:px-10 py-4 lg:py-5">
-                <div class="flex items-center gap-3">
-                    <!-- Hamburger button (mobile only) -->
-                    <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg text-surface-400 hover:text-white hover:bg-surface-800 transition-colors">
-                        <i data-lucide="menu" class="w-5 h-5"></i>
-                    </button>
-                    <h2 class="text-lg lg:text-xl font-bold text-white">{% block page_title %}Dashboard{% endblock %}</h2>
-                </div>
-
-                <div class="flex items-center gap-3 lg:gap-5">
-                    <div class="hidden sm:flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-brand-600/20 flex items-center justify-center">
-                            <i data-lucide="user" class="w-4 h-4 text-brand-400"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-white leading-tight">{{ user.first_name }} {{ user.last_name }}</p>
-                            <p class="text-xs text-surface-400">{{ user.email }}</p>
-                        </div>
-                    </div>
-                    <a href="/logout"
-                       class="flex flex-row items-center gap-2 text-sm text-surface-400 hover:text-white border border-surface-700 hover:border-surface-400 px-3 lg:px-4 py-2 rounded-lg transition-all duration-200">
-                        <i data-lucide="log-out" class="w-4 h-4 flex-shrink-0"></i>
-                        <span class="hidden sm:inline">Sign Out</span>
-                    </a>
-                </div>
+        <!-- Mobile menu -->
+        <nav id="mobile-menu" class="hidden xl:hidden border-t border-surface-800 bg-surface-900 max-h-[70vh] overflow-y-auto scrollbar-thin">
+            <div class="px-4 py-4 space-y-1">
+                {% set all_nav = [
+                    ('dashboard', '/dashboard', 'layout-dashboard', 'Dashboard'),
+                    ('brokers', '/brokers', 'landmark', 'Brokers'),
+                    ('instruments_api', '/instruments-api', 'file-code', 'Instruments API'),
+                    ('account_details_api', '/account-details-api', 'user-circle', 'Account Details API'),
+                    ('order_api', '/order-api', 'list-ordered', 'Order API'),
+                    ('trading_api', '/trading-api', 'arrow-left-right', 'Trading API'),
+                    ('market_data_api', '/market-data-api', 'candlestick-chart', 'Market Data API'),
+                    ('chart_image_api', '/chart-image-api', 'image', 'Chart Image API'),
+                    ('news_api', '/news-api', 'newspaper', 'News API'),
+                    ('event_ids', '/event-ids', 'hash', 'Event ID Reference'),
+                    ('scrape_api', '/scrape-api', 'globe', 'Scrape API'),
+                    ('mcp_server', '/mcp-server', 'cpu', 'MCP Server'),
+                    ('asp_guide', '/asp-guide', 'search', 'ASP Protocol'),
+                    ('install', '/install', 'download', 'Install Guide'),
+                    ('settings', '/settings', 'settings', 'Settings'),
+                ] %}
+                {% for page, href, icon, label in all_nav %}
+                <a href="{{ href }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
+                          {% if active_page == page %}bg-brand-600 text-white shadow-lg shadow-brand-600/25{% else %}text-surface-200 hover:bg-surface-800 hover:text-white{% endif %}">
+                    <i data-lucide="{{ icon }}" class="w-4 h-4 flex-shrink-0"></i>
+                    <span>{{ label }}</span>
+                </a>
+                {% endfor %}
             </div>
-        </header>
+            <!-- Attribution in mobile menu — required by license -->
+            <div class="px-4 py-4 border-t border-surface-800" id="arrissa-credit" data-arrissa="vestorfinance">
+                <p class="text-xs text-surface-400 text-center">&copy; 2026 {{ app_name }} &middot; v1.0</p>
+                <p class="text-[10px] text-surface-500 text-center mt-1">
+                    Powered by <a href="https://arrissadata.com" target="_blank" class="text-surface-400 hover:text-brand-400 transition">Arrissa</a>
+                    &middot; <a href="https://arrissa.trade" target="_blank" class="text-surface-400 hover:text-brand-400 transition">arrissa.trade</a>
+                </p>
+                <p class="text-[10px] text-surface-500 text-center mt-0.5">
+                    Created by <a href="https://arrissacapital.com" target="_blank" class="text-surface-400 hover:text-brand-400 transition">Arrissa Pty Ltd</a>
+                    &middot; <a href="https://instagram.com/davidrichchild" target="_blank" class="text-surface-400 hover:text-brand-400 transition">Ngonidzashe Jiji (David Richchild)</a>
+                </p>
+            </div>
+        </nav>
+    </header>
 
-        <div class="px-4 sm:px-6 lg:px-10 py-6 lg:py-8">
+    <!-- ═══ Main content ═══ -->
+    <main class="flex-1">
+        <!-- Page title bar -->
+        <div class="bg-surface-950 border-b border-surface-800">
+            <div class="px-4 sm:px-6 lg:px-8 py-4">
+                <h2 class="text-lg lg:text-xl font-bold text-white">{% block page_title %}Dashboard{% endblock %}</h2>
+            </div>
+        </div>
+
+        <div class="px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
             <!-- Update notification banner -->
             <div id="update-banner" class="hidden mb-6 bg-indigo-900/30 border border-indigo-700/50 rounded-2xl overflow-hidden">
                 <div class="px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -244,38 +260,67 @@
 
             {% block content %}{% endblock %}
         </div>
-    </main>
+    <!-- Footer attribution — required by license -->
+    <footer class="border-t border-surface-800 py-4" id="arrissa-credit" data-arrissa="vestorfinance">
+        <p class="text-xs text-surface-400 text-center">&copy; 2026 {{ app_name }} &middot; v1.0</p>
+        <p class="text-[10px] text-surface-500 text-center mt-1">
+            Powered by <a href="https://arrissadata.com" target="_blank" class="text-surface-400 hover:text-brand-400 transition">Arrissa</a>
+            &middot; <a href="https://arrissa.trade" target="_blank" class="text-surface-400 hover:text-brand-400 transition">arrissa.trade</a>
+            &middot; Created by <a href="https://arrissacapital.com" target="_blank" class="text-surface-400 hover:text-brand-400 transition">Arrissa Pty Ltd</a>
+            &middot; <a href="https://instagram.com/davidrichchild" target="_blank" class="text-surface-400 hover:text-brand-400 transition">Ngonidzashe Jiji (David Richchild)</a>
+        </p>
+    </footer>
 </div>
 
 <script>
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    const isOpen = !sidebar.classList.contains('-translate-x-full');
+function toggleMobileMenu() {
+    const menu = document.getElementById('mobile-menu');
+    const overlay = document.getElementById('mobile-overlay');
+    const isOpen = !menu.classList.contains('hidden');
     if (isOpen) {
-        sidebar.classList.add('-translate-x-full');
+        menu.classList.add('hidden');
         overlay.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
     } else {
-        sidebar.classList.remove('-translate-x-full');
+        menu.classList.remove('hidden');
         overlay.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
     }
-    // Re-init lucide icons for any newly visible elements
     lucide.createIcons();
 }
-// Close sidebar on window resize to desktop
+
+function toggleApiDropdown() {
+    const menu = document.getElementById('api-dropdown-menu');
+    const toolsMenu = document.getElementById('tools-dropdown-menu');
+    toolsMenu.classList.add('hidden');
+    menu.classList.toggle('hidden');
+    lucide.createIcons();
+}
+
+function toggleToolsDropdown() {
+    const menu = document.getElementById('tools-dropdown-menu');
+    const apiMenu = document.getElementById('api-dropdown-menu');
+    apiMenu.classList.add('hidden');
+    menu.classList.toggle('hidden');
+    lucide.createIcons();
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click', (e) => {
+    if (!document.getElementById('api-dropdown').contains(e.target)) {
+        document.getElementById('api-dropdown-menu').classList.add('hidden');
+    }
+    if (!document.getElementById('tools-dropdown').contains(e.target)) {
+        document.getElementById('tools-dropdown-menu').classList.add('hidden');
+    }
+});
+
+// Close mobile menu on resize to desktop
 window.addEventListener('resize', () => {
-    if (window.innerWidth >= 1024) {
-        document.getElementById('sidebar').classList.remove('-translate-x-full');
-        document.getElementById('sidebar-overlay').classList.add('hidden');
+    if (window.innerWidth >= 1280) {
+        document.getElementById('mobile-menu').classList.add('hidden');
+        document.getElementById('mobile-overlay').classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
-    } else {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar.classList.contains('-translate-x-full')) {
-            sidebar.classList.add('-translate-x-full');
-            document.getElementById('sidebar-overlay').classList.add('hidden');
-        }
     }
 });
 
@@ -346,12 +391,5 @@ function runUpdate() {
         });
 }
 </script>
-{% block attribution %}
-<div id="arrissa-attribution" data-arrissa="vestorfinance" class="lg:ml-64" style="text-align:center;padding:12px 0 8px;font-size:10px;color:#64748b;">
-    Powered by <a href="https://arrissadata.com" target="_blank" style="color:#818cf8;text-decoration:none;">Arrissa</a>
-    &middot; <a href="https://arrissa.trade" target="_blank" style="color:#818cf8;text-decoration:none;">arrissa.trade</a>
-    &middot; Created by <a href="https://arrissacapital.com" target="_blank" style="color:#818cf8;text-decoration:none;">Arrissa Pty Ltd</a>
-    &middot; <a href="https://instagram.com/davidrichchild" target="_blank" style="color:#818cf8;text-decoration:none;">@davidrichchild</a>
-</div>
-{% endblock %}
+{% block attribution %}{% endblock %}
 {% endblock %}
