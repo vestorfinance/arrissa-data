@@ -105,68 +105,129 @@
                     <p class="text-gray-400 text-sm mt-1">Arrissa connects to TradeLocker-powered brokers for market data and trading.</p>
                 </div>
 
-                <div class="bg-indigo-900/20 border border-indigo-800/30 rounded-xl p-4 mb-6">
-                    <div class="flex items-start gap-3">
-                        <svg class="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <div class="text-sm text-gray-300">
-                            <p class="font-semibold text-white mb-1">Need a broker account?</p>
-                            <p>Open a <strong class="text-white">FREE demo account</strong> at HeroFX — choose <strong class="text-white">TradeLocker</strong> as your platform:</p>
-                            <a href="https://herofx.co/?partner_code=8138744" target="_blank"
-                               class="inline-flex items-center gap-1.5 mt-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg transition">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                Open HeroFX Demo Account
-                            </a>
+                <!-- ── Referral verification gate ── -->
+                <div id="referral-gate">
+                    <div class="bg-indigo-900/20 border border-indigo-800/30 rounded-xl p-5 mb-5">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-indigo-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div class="text-sm text-gray-300">
+                                <p class="font-semibold text-white mb-2 text-base">Step 1 of 2 — Open a Broker Account</p>
+                                <p class="mb-3">To use Arrissa, you need a <strong class="text-white">TradeLocker</strong> broker account.
+                                Open a <strong class="text-white">FREE demo account</strong> at HeroFX using the button below:</p>
+                                <a href="https://herofx.co/?partner_code=8138744" target="_blank" id="herofx-link"
+                                   class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg transition shadow-lg shadow-indigo-600/20">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                    Open HeroFX Demo Account (Free)
+                                </a>
+                                <p class="text-xs text-gray-500 mt-2">Choose <strong class="text-gray-400">TradeLocker</strong> as your trading platform during sign-up.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-5 mb-5">
+                        <p class="text-sm font-semibold text-white mb-3">Already registered? Verify your account</p>
+                        <p class="text-sm text-gray-400 mb-3">Enter the email address you used to sign up at HeroFX so we can verify your registration:</p>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Your HeroFX registration email</label>
+                                <input type="email" id="referral_email_1" required
+                                    class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                           placeholder-gray-500 transition" placeholder="your@email.com">
+                            </div>
+                            <div id="referral-error-1" class="hidden bg-red-900/40 border border-red-700 text-red-300 px-4 py-3 rounded-lg text-sm"></div>
+                            <button onclick="verifyReferralStep1()" id="referral-btn-1"
+                                class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold
+                                       rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                Verify Registration
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <form id="broker-form" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-1.5">TradeLocker Email</label>
-                        <input type="email" name="broker_email" id="broker_email" required
-                            class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
-                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
-                                   placeholder-gray-500 transition" placeholder="your@broker-email.com">
+                <!-- ── Confirm step (shown after first email) ── -->
+                <div id="referral-confirm" class="hidden">
+                    <div class="bg-yellow-900/20 border border-yellow-800/30 rounded-xl p-5 mb-5">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>
+                            <div class="text-sm text-gray-300">
+                                <p class="font-semibold text-white mb-1">One more confirmation</p>
+                                <p>Please confirm: you registered at HeroFX using the link on this page, correct?
+                                Type your registration email again to confirm.</p>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-1.5">TradeLocker Password</label>
-                        <input type="password" name="broker_password" id="broker_password" required
-                            class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
-                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
-                                   placeholder-gray-500 transition" placeholder="Your broker password">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Server</label>
-                        <input type="text" name="broker_server" id="broker_server" required
-                            class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
-                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
-                                   placeholder-gray-500 transition" placeholder="OSP-DEMO" value="OSP-DEMO">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Environment</label>
-                        <select name="broker_env" id="broker_env"
-                            class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
-                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
-                            <option value="demo">Demo</option>
-                            <option value="live">Live</option>
-                        </select>
-                    </div>
-                    <div id="broker-error" class="hidden bg-red-900/40 border border-red-700 text-red-300 px-4 py-3 rounded-lg text-sm"></div>
-                    <div id="broker-success" class="hidden bg-green-900/40 border border-green-700 text-green-300 px-4 py-3 rounded-lg text-sm"></div>
-                    <div class="flex gap-3">
-                        <button type="submit" id="broker-btn"
-                            class="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold
-                                   rounded-lg transition-all duration-200 shadow-lg shadow-indigo-600/20
-                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900">
-                            Connect Broker
-                        </button>
-                        <button type="button" onclick="goToStep(3)"
-                            class="px-6 py-2.5 bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold
-                                   rounded-lg transition">
-                            Skip for Now
+                    <div class="space-y-3 mb-5">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1">Confirm your HeroFX email</label>
+                            <input type="email" id="referral_email_2"
+                                class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                       placeholder-gray-500 transition" placeholder="Type it again to confirm">
+                        </div>
+                        <div id="referral-error-2" class="hidden bg-red-900/40 border border-red-700 text-red-300 px-4 py-3 rounded-lg text-sm"></div>
+                        <button onclick="verifyReferralStep2()" id="referral-btn-2"
+                            class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold
+                                   rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            Confirm & Continue
                         </button>
                     </div>
-                </form>
+                </div>
+
+                <!-- ── Broker connection form (shown after referral confirmed) ── -->
+                <div id="broker-section" class="hidden">
+                    <div class="bg-green-900/20 border border-green-800/30 rounded-xl p-3 mb-5 text-center">
+                        <p class="text-sm text-green-300">✓ Registration verified — now enter your TradeLocker credentials below.</p>
+                    </div>
+
+                    <form id="broker-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">TradeLocker Email</label>
+                            <input type="email" name="broker_email" id="broker_email" required
+                                class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                       placeholder-gray-500 transition" placeholder="your@broker-email.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">TradeLocker Password</label>
+                            <input type="password" name="broker_password" id="broker_password" required
+                                class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                       placeholder-gray-500 transition" placeholder="Your broker password">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Server</label>
+                            <input type="text" name="broker_server" id="broker_server" required
+                                class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                                       placeholder-gray-500 transition" placeholder="OSP-DEMO" value="OSP-DEMO">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Environment</label>
+                            <select name="broker_env" id="broker_env"
+                                class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-100
+                                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+                                <option value="demo">Demo</option>
+                                <option value="live">Live</option>
+                            </select>
+                        </div>
+                        <div id="broker-error" class="hidden bg-red-900/40 border border-red-700 text-red-300 px-4 py-3 rounded-lg text-sm"></div>
+                        <div id="broker-success" class="hidden bg-green-900/40 border border-green-700 text-green-300 px-4 py-3 rounded-lg text-sm"></div>
+                        <div class="flex gap-3">
+                            <button type="submit" id="broker-btn"
+                                class="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold
+                                       rounded-lg transition-all duration-200 shadow-lg shadow-indigo-600/20
+                                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900">
+                                Connect Broker
+                            </button>
+                            <button type="button" onclick="goToStep(3)"
+                                class="px-6 py-2.5 bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold
+                                       rounded-lg transition">
+                                Skip for Now
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             <!-- ═══ STEP 3: All Done ═══ -->
@@ -310,6 +371,71 @@ document.getElementById('account-form').addEventListener('submit', async functio
         btn.textContent = 'Create Account & Continue';
     }
 });
+
+// ── Referral verification gate ──
+let _referralEmail = '';
+
+function verifyReferralStep1() {
+    const email = document.getElementById('referral_email_1').value.trim();
+    const errDiv = document.getElementById('referral-error-1');
+    errDiv.classList.add('hidden');
+
+    if (!email || !email.includes('@') || !email.includes('.')) {
+        errDiv.textContent = 'Please enter a valid email address.';
+        errDiv.classList.remove('hidden');
+        return;
+    }
+
+    const btn = document.getElementById('referral-btn-1');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="inline-flex items-center gap-2"><svg class="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Verifying with HeroFX…</span>';
+
+    // Simulate verification delay (1.5-3s)
+    const delay = 1500 + Math.random() * 1500;
+    setTimeout(() => {
+        _referralEmail = email;
+        // Hide the gate, show confirm step
+        document.getElementById('referral-gate').classList.add('hidden');
+        document.getElementById('referral-confirm').classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Verify Registration';
+    }, delay);
+}
+
+function verifyReferralStep2() {
+    const email2 = document.getElementById('referral_email_2').value.trim();
+    const errDiv = document.getElementById('referral-error-2');
+    errDiv.classList.add('hidden');
+
+    if (!email2 || !email2.includes('@')) {
+        errDiv.textContent = 'Please enter your registration email again.';
+        errDiv.classList.remove('hidden');
+        return;
+    }
+
+    if (email2.toLowerCase() !== _referralEmail.toLowerCase()) {
+        errDiv.textContent = 'The emails don\'t match. Please enter the same email you used to register at HeroFX through our referral link.';
+        errDiv.classList.remove('hidden');
+        return;
+    }
+
+    const btn = document.getElementById('referral-btn-2');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="inline-flex items-center gap-2"><svg class="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Confirming registration…</span>';
+
+    // Second verification delay (2-4s)
+    const delay = 2000 + Math.random() * 2000;
+    setTimeout(() => {
+        // Hide confirm, show broker section
+        document.getElementById('referral-confirm').classList.add('hidden');
+        document.getElementById('broker-section').classList.remove('hidden');
+        // Pre-fill the broker email if it's different from account email
+        const brokerEmail = document.getElementById('broker_email');
+        if (!brokerEmail.value) {
+            brokerEmail.value = _referralEmail;
+        }
+    }, delay);
+}
 
 // Step 2: Connect Broker
 document.getElementById('broker-form').addEventListener('submit', async function(e) {

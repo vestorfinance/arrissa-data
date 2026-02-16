@@ -1,3 +1,7 @@
+# ── Arrissa Data · Copyright (c) 2026 Arrissa Pty Ltd ──
+# https://arrissadata.com · https://arrissa.trade · @mystprevail
+# See LICENSE for attribution requirements.
+
 from datetime import datetime, timezone, timedelta
 from functools import wraps
 import subprocess, os, json
@@ -42,6 +46,23 @@ app.jinja_env.globals["app_name"] = APP_NAME
 # Register ASP (Agent Server Protocol) blueprint
 from app.asp_routes import asp_bp
 app.register_blueprint(asp_bp)
+
+# ── Attribution integrity check (periodic, every 50 requests) ──
+from app.integrity import quick_check as _integrity_ok
+_req_counter = {"n": 0}
+
+@app.before_request
+def _check_license_attribution():
+    _req_counter["n"] += 1
+    if _req_counter["n"] % 50 == 1:          # check on 1st request, then every 50th
+        if not _integrity_ok():
+            from flask import abort
+            abort(503, description=(
+                "Attribution removed — this violates the Arrissa license. "
+                "Restore the original attribution in templates. "
+                "See LICENSE: https://github.com/vestorfinance/arrissa-data"
+            ))
+
 
 
 def _resolve_default_account(api_key, arrissa_account_id):

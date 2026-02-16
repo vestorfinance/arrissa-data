@@ -355,4 +355,12 @@ netstat -ano | findstr :5001  # Windows
 
 ## License
 
-Proprietary software by [Arrissa Pty Ltd](https://github.com/vestorfinance).
+MIT License with Required Attribution — see [LICENSE](LICENSE) for full terms.
+
+Copyright (c) 2026 **Arrissa Pty Ltd**
+
+- Website: [arrissadata.com](https://arrissadata.com) · [arrissa.trade](https://arrissa.trade) · [arrissacapital.com](https://arrissacapital.com)
+- GitHub: [vestorfinance](https://github.com/vestorfinance)
+- X / Twitter: [@mystprevail](https://x.com/mystprevail)
+
+**Attribution is required.** All forks and derivative works must retain the visible "Powered by Arrissa" credit in the UI. Removal of attribution violates the license and disables the application.

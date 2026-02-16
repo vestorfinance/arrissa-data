@@ -1,6 +1,11 @@
 """
 Arrissa MCP Server — exposes the entire Arrissa trading API as MCP tools.
 
+Copyright (c) 2026 Arrissa Pty Ltd
+https://arrissadata.com · https://arrissa.trade · https://arrissacapital.com
+Author: @mystprevail · https://github.com/vestorfinance
+See LICENSE for attribution requirements.
+
 Run locally (stdio):   python mcp_server.py
 Run remotely (SSE):    python mcp_server.py --sse [--host 0.0.0.0] [--port 5002]
 

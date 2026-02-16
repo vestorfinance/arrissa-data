@@ -1,5 +1,12 @@
+# ── Arrissa Data · Copyright (c) 2026 Arrissa Pty Ltd ──
+# https://arrissadata.com · https://arrissa.trade · @mystprevail
+# See LICENSE for attribution requirements.
+
 import redis
 from sqlalchemy import text
+
+# Integrity check — verifies attribution is intact (runs on import)
+import app.integrity  # noqa: F401
 
 from app.config import REDIS_HOST, REDIS_PORT, REDIS_DB, REDIS_PASSWORD
 from app.database import engine, Base
