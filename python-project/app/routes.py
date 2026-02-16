@@ -3463,11 +3463,17 @@ def account_details_api_guide():
 
 def _rows_to_dicts(rows, columns):
     """Convert a list of raw arrays into a list of named dicts using config columns."""
+    # columns may be a dict {index: name} or a list — normalise to list
+    if isinstance(columns, dict):
+        max_idx = max((int(k) for k in columns), default=-1)
+        col_list = [columns.get(str(i), columns.get(i, f"field_{i}")) for i in range(max_idx + 1)]
+    else:
+        col_list = columns
     result = []
     for row in rows:
         obj = {}
         for i, val in enumerate(row):
-            col_name = columns[i] if i < len(columns) else f"field_{i}"
+            col_name = col_list[i] if i < len(col_list) else f"field_{i}"
             obj[col_name] = val
         result.append(obj)
     return result
@@ -3846,11 +3852,17 @@ def _get_instrument_ids(instruments, symbol_name):
 
 def _positions_to_dicts(positions_raw, config_columns):
     """Convert position arrays to dicts with column names."""
+    # config_columns may be a dict {index: name} or a list — normalise to list
+    if isinstance(config_columns, dict):
+        max_idx = max((int(k) for k in config_columns), default=-1)
+        col_list = [config_columns.get(str(i), config_columns.get(i, f"field_{i}")) for i in range(max_idx + 1)]
+    else:
+        col_list = config_columns
     result = []
     for row in positions_raw:
         obj = {}
         for i, val in enumerate(row):
-            col = config_columns[i] if i < len(config_columns) else f"field_{i}"
+            col = col_list[i] if i < len(col_list) else f"field_{i}"
             obj[col] = val
         result.append(obj)
     return result
@@ -3927,22 +3939,13 @@ def api_trade():
 
         # ── Helper: get config columns ───────────────────────────────────
         def _get_pos_columns():
-            cfg = tradelocker_get_config(access_token, account.acc_num, credential.environment)
-            if cfg and "d" in cfg:
-                return cfg["d"].get("positionsConfig", [])
-            return []
+            return _get_config_columns(access_token, account.acc_num, credential.environment, "positionsConfig") or []
 
         def _get_order_columns():
-            cfg = tradelocker_get_config(access_token, account.acc_num, credential.environment)
-            if cfg and "d" in cfg:
-                return cfg["d"].get("ordersConfig", [])
-            return []
+            return _get_config_columns(access_token, account.acc_num, credential.environment, "ordersConfig") or []
 
         def _get_history_columns():
-            cfg = tradelocker_get_config(access_token, account.acc_num, credential.environment)
-            if cfg and "d" in cfg:
-                return cfg["d"].get("ordersHistoryConfig", [])
-            return []
+            return _get_config_columns(access_token, account.acc_num, credential.environment, "ordersHistoryConfig") or []
 
         # ── Helper: get instruments once if needed ─────────────────────
         _instruments_cache = {}
