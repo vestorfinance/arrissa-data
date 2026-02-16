@@ -190,6 +190,10 @@
                             class="text-xs text-indigo-300 hover:text-white px-3 py-1.5 bg-indigo-800/40 hover:bg-indigo-700/50 rounded-lg transition">
                             View Changes
                         </button>
+                        <button id="update-now-btn" onclick="runUpdate()"
+                            class="text-xs text-white font-semibold px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg transition">
+                            Update Now
+                        </button>
                         <button onclick="document.getElementById('update-banner').classList.add('hidden')"
                             class="text-xs text-indigo-400 hover:text-white p-1.5 rounded-lg transition">
                             <i data-lucide="x" class="w-4 h-4"></i>
@@ -300,5 +304,38 @@ window.addEventListener('resize', () => {
         })
         .catch(() => {}); // Silently fail
 })();
+
+function runUpdate() {
+    const btn = document.getElementById('update-now-btn');
+    const origText = btn.textContent;
+    btn.textContent = 'Updating...';
+    btn.disabled = true;
+    btn.classList.add('opacity-60', 'cursor-not-allowed');
+
+    fetch('/api/run-update', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                btn.textContent = '✓ Updated! Restarting...';
+                btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-500');
+                btn.classList.add('bg-green-600');
+                // Server restarts in ~2s, reload page after 5s
+                setTimeout(() => { window.location.reload(); }, 5000);
+            } else {
+                btn.textContent = 'Failed — see console';
+                btn.classList.remove('bg-indigo-600');
+                btn.classList.add('bg-red-600');
+                console.error('Update failed:', data);
+                setTimeout(() => { btn.textContent = origText; btn.disabled = false; btn.classList.remove('opacity-60','cursor-not-allowed','bg-red-600'); btn.classList.add('bg-indigo-600'); }, 5000);
+            }
+        })
+        .catch(err => {
+            // If fetch fails it might be because the server restarted mid-request — that's actually success
+            btn.textContent = '✓ Restarting...';
+            btn.classList.remove('bg-indigo-600');
+            btn.classList.add('bg-green-600');
+            setTimeout(() => { window.location.reload(); }, 5000);
+        });
+}
 </script>
 {% endblock %}

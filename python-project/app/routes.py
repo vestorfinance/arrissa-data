@@ -567,6 +567,50 @@ def check_update():
         return jsonify({"update_available": False, "error": str(e)})
 
 
+@app.route("/api/run-update", methods=["POST"])
+@login_required
+def run_update():
+    """Pull latest code from GitHub, install deps, and schedule a service restart."""
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    project_dir = os.path.join(repo_root, "python-project")
+    venv_pip = os.path.join(project_dir, ".venv", "bin", "pip")
+
+    steps = []
+    try:
+        # 1. Git pull
+        r = subprocess.run(
+            ["git", "pull", "origin", "main"],
+            cwd=repo_root, capture_output=True, text=True, timeout=60
+        )
+        steps.append({"step": "git pull", "ok": r.returncode == 0, "output": r.stdout.strip() or r.stderr.strip()})
+        if r.returncode != 0:
+            return jsonify({"success": False, "steps": steps, "error": "Git pull failed"}), 500
+
+        # 2. pip install
+        r = subprocess.run(
+            [venv_pip, "install", "-r", "requirements.txt"],
+            cwd=project_dir, capture_output=True, text=True, timeout=120
+        )
+        steps.append({"step": "pip install", "ok": r.returncode == 0, "output": (r.stdout.strip() or r.stderr.strip())[-500:]})
+
+        # 3. Clear update cache
+        _update_cache["data"] = None
+        _update_cache["checked_at"] = None
+
+        # 4. Schedule restart in background (delay so this response gets sent first)
+        subprocess.Popen(
+            ["bash", "-c", "sleep 2 && systemctl restart arrissa-data arrissa-mcp"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+        steps.append({"step": "restart scheduled", "ok": True, "output": "Services will restart in 2 seconds"})
+
+        return jsonify({"success": True, "steps": steps})
+
+    except Exception as e:
+        steps.append({"step": "error", "ok": False, "output": str(e)})
+        return jsonify({"success": False, "steps": steps, "error": str(e)}), 500
+
+
 # ─── First-Run Setup Wizard ──────────────────────────────────────────────────
 
 @app.route("/setup")
