@@ -579,7 +579,17 @@ def run_update():
 
     steps = []
     try:
-        # 1. Git pull
+        # 1. Reset any local changes (from SCP deploys) so git pull succeeds
+        r = subprocess.run(
+            ["git", "checkout", "-f", "main"],
+            cwd=repo_root, capture_output=True, text=True, timeout=15
+        )
+        subprocess.run(
+            ["git", "reset", "--hard", "HEAD"],
+            cwd=repo_root, capture_output=True, text=True, timeout=15
+        )
+
+        # 2. Git pull
         r = subprocess.run(
             ["git", "pull", "origin", "main"],
             cwd=repo_root, capture_output=True, text=True, timeout=60
