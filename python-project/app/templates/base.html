@@ -24,6 +24,12 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         html, body { font-family: 'Inter', system-ui, sans-serif; overscroll-behavior: none; }
         pre code.hljs { background: transparent !important; padding: 0 !important; }
+        /* Thin scrollbar for sidebar */
+        .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.2); border-radius: 4px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.4); }
+        .scrollbar-thin { scrollbar-width: thin; scrollbar-color: rgba(148,163,184,0.2) transparent; }
     </style>
 </head>
 <body class="bg-surface-950 text-surface-200 min-h-screen">
