@@ -20,15 +20,148 @@ A self-hosted trading data API that connects to [TradeLocker](https://tradelocke
 
 ### Option A: VPS Deployment (Recommended)
 
-Deploy on any Ubuntu VPS with a single copy-paste install script.
+Deploy on any Ubuntu VPS with a single copy-paste script. Requires Ubuntu 22.04+.
 
-1. Get a VPS (Ubuntu 22.04+) and a domain on [Cloudflare](https://dash.cloudflare.com)
-2. Point a subdomain (e.g. `data.yourdomain.com`) to your VPS IP (A record, DNS only)
-3. SSH into your VPS and visit the install guide at:
+**Before you start:**
+1. Get a VPS from any provider (DigitalOcean, Hetzner, Contabo, etc.) — minimum 1 CPU / 1 GB RAM
+2. Add your domain to [Cloudflare](https://dash.cloudflare.com)
+3. In Cloudflare DNS, create an **A record** for your subdomain (e.g. `data.yourdomain.com`) pointing to your VPS IP. Set proxy to **DNS only** (gray cloud).
 
-   **`https://your-existing-instance.com/install`**
+**Connect to your VPS** — open a terminal and run:
 
-   Or follow the manual steps below.
+```bash
+ssh root@YOUR_VPS_IP
+```
+
+**Then paste this entire block** (replace the 3 values at the top):
+
+```bash
+# ═══════════════════════════════════════════════════
+#  EDIT THESE THREE VALUES
+# ═══════════════════════════════════════════════════
+MY_DOMAIN="data.yourdomain.com"
+MY_MYSQL_PASS="ChooseAStr0ngPassword!"
+MY_APP_NAME="Arrissa Data"
+# ═══════════════════════════════════════════════════
+
+# Generate a random API key
+MY_API_KEY=$(python3 -c "import secrets; print(secrets.token_hex(32))" 2>/dev/null || openssl rand -hex 32)
+
+# 1. Install system dependencies
+apt update && apt upgrade -y
+apt install -y python3 python3-pip python3-venv mariadb-server redis-server git curl \
+  debian-keyring debian-archive-keyring apt-transport-https software-properties-common
+systemctl start mariadb && systemctl enable mariadb
+systemctl start redis-server && systemctl enable redis-server
+
+# 2. Create database
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS arrissa_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -e "CREATE USER IF NOT EXISTS 'arrissa_user'@'localhost' IDENTIFIED BY '${MY_MYSQL_PASS}';"
+mysql -u root -e "GRANT ALL PRIVILEGES ON arrissa_db.* TO 'arrissa_user'@'localhost'; FLUSH PRIVILEGES;"
+
+# 3. Clone & install app
+cd /root
+git clone https://github.com/vestorfinance/arrissa-data.git
+cd /root/arrissa-data/python-project
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# 4. Create .env config
+cat > .env << ENVEOF
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=arrissa_user
+MYSQL_PASSWORD=${MY_MYSQL_PASS}
+MYSQL_DATABASE=arrissa_db
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_DB=0
+REDIS_PASSWORD=
+API_KEY=${MY_API_KEY}
+APP_NAME=${MY_APP_NAME}
+TRADELOCKER_DEMO_BASE_URL=https://demo.tradelocker.com/backend-api
+TRADELOCKER_LIVE_BASE_URL=https://live.tradelocker.com/backend-api
+ENVEOF
+
+# 5. Create systemd services
+cat > /etc/systemd/system/arrissa-data.service << 'EOF'
+[Unit]
+Description=Arrissa Data API
+After=network.target mariadb.service redis-server.service
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/arrissa-data/python-project
+ExecStart=/root/arrissa-data/python-project/.venv/bin/python main.py
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat > /etc/systemd/system/arrissa-mcp.service << EOF
+[Unit]
+Description=Arrissa MCP Server (SSE)
+After=network.target arrissa-data.service
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/arrissa-data/python-project
+ExecStart=/root/arrissa-data/python-project/.venv/bin/python mcp_server.py --sse --host 127.0.0.1 --port 5002 --mount-path /mcp
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+Environment=ARRISSA_API_URL=http://localhost:5001
+Environment=ARRISSA_API_KEY=${MY_API_KEY}
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable arrissa-data arrissa-mcp
+
+# 6. Install & configure Caddy (HTTPS reverse proxy)
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
+apt update && apt install -y caddy
+
+cat > /etc/caddy/Caddyfile << CADDYEOF
+${MY_DOMAIN} {
+    handle_path /mcp/* {
+        reverse_proxy localhost:5002 {
+            flush_interval -1
+            header_up Host localhost:5002
+        }
+    }
+    handle {
+        reverse_proxy localhost:5001
+    }
+    encode gzip
+}
+CADDYEOF
+
+mkdir -p /var/log/caddy
+caddy fmt --overwrite /etc/caddy/Caddyfile
+systemctl enable caddy
+
+# 7. Start everything
+systemctl restart mariadb redis-server
+systemctl start arrissa-data && sleep 3
+systemctl start arrissa-mcp && sleep 2
+systemctl restart caddy && sleep 3
+
+echo ""
+echo "════════════════════════════════════════════════"
+echo "  ✓ Installation complete!"
+echo "  Open: https://${MY_DOMAIN}"
+echo "  MCP:  https://${MY_DOMAIN}/mcp/sse"
+echo "════════════════════════════════════════════════"
+```
+
+Open **https://your-subdomain** in your browser — the setup wizard will walk you through creating your account and connecting a broker.
 
 ### Option B: Local Development
 
